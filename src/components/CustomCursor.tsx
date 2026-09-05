@@ -76,17 +76,22 @@ export default function CustomCursor() {
   return (
     <div ref={wrapperRef} className={`custom-cursor${show ? ' is-visible' : ''}${idle ? ' is-idle' : ''}`} aria-hidden="true">
       <svg className="custom-cursor-paw" viewBox="0 0 36 33" xmlns="http://www.w3.org/2000/svg">
-        {/* Heart accent, upper-left — the outline is the theme's dark
-            "cocoa" shade (not white), so it actually reads against a
-            light page background instead of disappearing into it. */}
+        {/* Heart accent, upper-left. Bigger than before, and drawn
+            point-up: its pointed tip sits at the outer (top) end,
+            away from the paw, acting as the cursor's pointing tip,
+            with its two rounded lobes tucked in toward the paw. The
+            outline is the theme's dark "cocoa" shade (not white), so
+            it actually reads against a light page background instead
+            of disappearing into it. */}
         <path
           fill="var(--color-brand-300)"
           stroke="var(--color-cocoa)"
-          strokeWidth="1.3"
+          strokeWidth="1.7"
           strokeLinejoin="round"
-          d="M6.8 2.4c-1.3-1.5-3.8-1-3.8 1 0 2 2.2 3.6 3.8 5 1.6-1.4 3.8-3 3.8-5 0-2-2.5-2.5-3.8-1z"
+          transform="translate(6 7) scale(0.8)"
+          d="M0 3.5C-3 7 -6 4 -6 1 -6 -2.5 -3 -5 0 -8 3 -5 6 -2.5 6 1 6 4 3 7 0 3.5Z"
         />
-        <circle cx="5.3" cy="4.3" r="0.55" fill="#ffffff" opacity="0.85" />
+        <circle cx="2.1" cy="5" r="0.9" fill="#ffffff" opacity="0.85" />
 
         {/* Paw: heel pad + four toe pads, each outlined so it reads as
             distinct pads (like a real paw print) rather than a fused
