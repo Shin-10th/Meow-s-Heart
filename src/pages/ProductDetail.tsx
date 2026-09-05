@@ -7,7 +7,6 @@ import { formatMMK } from '../lib/format'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
 import PawSpinner from '../components/PawSpinner'
-import WalkingCat from '../components/WalkingCat'
 
 export default function ProductDetail() {
   const { slug } = useParams()
@@ -52,13 +51,12 @@ export default function ProductDetail() {
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
-        <div className="card relative flex aspect-square items-center justify-center overflow-hidden bg-brand-50">
+        <div className="card flex aspect-square items-center justify-center overflow-hidden bg-brand-50">
           {product.image_url ? (
             <img src={product.image_url} alt={product.name} className="h-full w-full object-cover" />
           ) : (
             <Sparkles className="h-16 w-16 text-brand-200" />
           )}
-          <WalkingCat seed={product.id} />
         </div>
 
         <div>
