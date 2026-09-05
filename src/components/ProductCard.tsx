@@ -4,6 +4,7 @@ import type { Product } from '../types'
 import { formatMMK } from '../lib/format'
 import { useCart } from '../context/CartContext'
 import { useLanguage } from '../context/LanguageContext'
+import WalkingCat from './WalkingCat'
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
@@ -34,6 +35,7 @@ export default function ProductCard({ product }: { product: Product }) {
             {t('common.sale')}
           </span>
         )}
+        <WalkingCat seed={product.id} />
       </Link>
       <div className="flex flex-1 flex-col p-4">
         {product.origin_country && (
