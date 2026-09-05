@@ -105,24 +105,50 @@
     animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Site-wide cat companion (see CatCompanion.tsx): a single cat fixed
-     to the bottom of the viewport that prowls between random spots,
-     then sits or naps for a while before moving again. The stage spans
-     the full width and ignores pointer events so it never blocks
-     clicks; only the cat's own small hit area is interactive, so it
-     can be clicked/"pet". */
+  /* Site-wide cat companion (see CatCompanion.tsx): a single cat that
+     roams all the way around the edges of the viewport — not just the
+     bottom — pausing to sit or nap, and hopping a little at each
+     corner and now and then mid-walk. The stage covers the whole
+     viewport and ignores pointer events so it never blocks clicks;
+     only the cat's own small hit area is interactive, so it can be
+     clicked/"pet".
+
+     Structure: anchor (positions + centers on the current edge
+     coordinate) > companion (rotates to lie flush against that edge)
+     > hopper (plays the little jump/pounce hop) > hit button (flips
+     to face the direction of travel) > body (the SVG cat itself, with
+     its own walk-bob/breathe animation). Each layer only touches its
+     own transform, so they combine without fighting each other. */
   .cat-companion-stage {
     position: fixed;
-    inset: auto 0 0 0;
-    height: 0;
+    inset: 0;
     pointer-events: none;
     z-index: 40;
   }
+  .cat-companion-anchor {
+    position: fixed;
+    transform: translate(-50%, -50%);
+    transition:
+      top 1.5s ease-in-out,
+      left 1.5s ease-in-out,
+      right 1.5s ease-in-out,
+      bottom 1.5s ease-in-out;
+  }
   .cat-companion {
-    position: absolute;
-    bottom: 0;
-    transform: translateX(-50%);
-    transition: left 2.2s ease-in-out;
+    transition: transform 0.4s ease-out;
+  }
+  .cat-companion-hopper {
+    position: relative;
+    display: block;
+  }
+  .cat-companion-jump {
+    animation: cat-jump-hop 0.46s ease-out;
+  }
+  @keyframes cat-jump-hop {
+    0% { transform: translateY(0) scale(1, 1); }
+    30% { transform: translateY(-14px) scale(0.92, 1.1); }
+    58% { transform: translateY(-14px) scale(1.05, 0.92); }
+    100% { transform: translateY(0) scale(1, 1); }
   }
   .cat-companion-hit {
     position: relative;
@@ -134,7 +160,7 @@
   }
   .cat-companion-body {
     display: block;
-    width: 3.25rem;
+    width: 2.75rem;
     height: auto;
     filter: drop-shadow(0 3px 5px rgba(69, 58, 54, 0.3));
     transform-origin: 50% 100%;
