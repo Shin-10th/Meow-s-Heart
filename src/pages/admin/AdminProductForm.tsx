@@ -1,8 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type ChangeEvent, type FormEvent } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import type { Category } from '../../types'
 import PawSpinner from '../../components/PawSpinner'
+
+const PRODUCT_IMAGES_BUCKET = 'product-images'
 
 function slugify(text: string) {
   return text
@@ -10,6 +12,11 @@ function slugify(text: string) {
     .trim()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/(^-|-$)+/g, '')
+}
+
+function randomId() {
+  if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
 }
 
 export default function AdminProductForm() {
@@ -32,6 +39,9 @@ export default function AdminProductForm() {
   const [stock, setStock] = useState('0')
   const [isFeatured, setIsFeatured] = useState(false)
   const [isActive, setIsActive] = useState(true)
+
+  const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -57,6 +67,44 @@ export default function AdminProductForm() {
     }
     load()
   }, [id, isEditing])
+
+  async function handleFileChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setUploadError('Please choose an image file.')
+      return
+    }
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Images must be 5MB or smaller.')
+      return
+    }
+
+    setUploading(true)
+    setUploadError(null)
+    try {
+      const ext = file.name.includes('.') ? file.name.split('.').pop() : 'jpg'
+      const path = `${randomId()}.${ext}`
+      const { error: uploadErr } = await supabase.storage.from(PRODUCT_IMAGES_BUCKET).upload(path, file, {
+        cacheControl: '3600',
+        upsert: false,
+      })
+      if (uploadErr) throw uploadErr
+
+      const { data } = supabase.storage.from(PRODUCT_IMAGES_BUCKET).getPublicUrl(path)
+      setImageUrl(data.publicUrl)
+    } catch (err) {
+      setUploadError(
+        err instanceof Error
+          ? err.message
+          : 'Upload failed. Make sure the "product-images" storage bucket has been set up (see supabase/storage-setup.sql).'
+      )
+    } finally {
+      setUploading(false)
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -116,10 +164,43 @@ export default function AdminProductForm() {
             <input type="number" min={0} value={comparePrice} onChange={(e) => setComparePrice(e.target.value)} className="input" />
           </div>
         </div>
+
         <div>
-          <label className="label">Image URL</label>
-          <input value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} className="input" placeholder="https://..." />
+          <label className="label">Product Image</label>
+          <div className="flex items-start gap-4">
+            <div className="grid h-24 w-24 shrink-0 place-items-center overflow-hidden rounded-2xl border border-cocoa/15 bg-brand-50">
+              {imageUrl ? (
+                <img src={imageUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                <span className="text-[10px] font-semibold uppercase tracking-wide text-cocoa-light/60">No image</span>
+              )}
+            </div>
+            <div className="flex-1 space-y-2">
+              <label className="btn-secondary inline-flex cursor-pointer px-4 py-2 text-sm">
+                {uploading ? 'Uploading…' : 'Upload image'}
+                <input type="file" accept="image/*" className="hidden" onChange={handleFileChange} disabled={uploading} />
+              </label>
+              {imageUrl && (
+                <button
+                  type="button"
+                  onClick={() => setImageUrl('')}
+                  className="ml-2 text-xs font-semibold text-cocoa-light hover:text-red-500"
+                >
+                  Remove
+                </button>
+              )}
+              <p className="text-xs text-cocoa-light">JPG, PNG, or WebP. Up to 5MB.</p>
+              {uploadError && <p className="text-xs font-semibold text-red-500">{uploadError}</p>}
+              <input
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                className="input mt-1"
+                placeholder="or paste an image URL"
+              />
+            </div>
+          </div>
         </div>
+
         <div className="grid gap-4 sm:grid-cols-2">
           <div>
             <label className="label">Category</label>

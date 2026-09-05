@@ -7,9 +7,11 @@
     <title>Meow's Heart - Premium Beauty Products from Asia</title>
     <meta name="description" content="Trendy, authentic, and affordable beauty solutions from Korea, Thailand, and China. Discover your purr-fect beauty look with Meow's Heart." />
     <!--
-      Applies the visitor's saved color theme before the stylesheet paints,
-      so there's no flash of the default palette. Keep this in sync with
-      src/themes.ts if you add/change a theme.
+      Applies the visitor's saved color theme (and the matching paw
+      cursor) before the stylesheet paints, so there's no flash of the
+      default palette or the wrong-colored cursor. Keep this in sync
+      with src/themes.ts (colors) and src/lib/cursor.ts (paw shape) if
+      you change either.
     -->
     <script>
       (function () {
@@ -24,6 +26,26 @@
           var vars = THEMES[saved] || THEMES.classic;
           var root = document.documentElement;
           for (var k in vars) { root.style.setProperty(k, vars[k]); }
+
+          function buildPawSvg(light, mid, dark) {
+            return '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">' +
+              '<defs><radialGradient id="mh-paw" cx="35%" cy="30%" r="75%">' +
+              '<stop offset="0%" stop-color="' + light + '"/>' +
+              '<stop offset="60%" stop-color="' + mid + '"/>' +
+              '<stop offset="100%" stop-color="' + dark + '"/>' +
+              '</radialGradient></defs>' +
+              '<g fill="url(#mh-paw)" stroke="#ffffff" stroke-width="1.4" stroke-linejoin="round">' +
+              '<ellipse cx="16" cy="22.5" rx="7.6" ry="6.3"/>' +
+              '<ellipse cx="6.5" cy="17" rx="2.7" ry="3.7" transform="rotate(-28 6.5 17)"/>' +
+              '<ellipse cx="12.3" cy="8.6" rx="3.1" ry="4.3" transform="rotate(-10 12.3 8.6)"/>' +
+              '<ellipse cx="19.7" cy="8.6" rx="3.1" ry="4.3" transform="rotate(10 19.7 8.6)"/>' +
+              '<ellipse cx="25.5" cy="17" rx="2.7" ry="3.7" transform="rotate(28 25.5 17)"/>' +
+              '</g></svg>';
+          }
+          var svg = buildPawSvg(vars['--color-brand-200'], vars['--color-brand-500'], vars['--color-brand-700']);
+          var dataUri = 'data:image/svg+xml,' + encodeURIComponent(svg);
+          root.style.setProperty('--cursor-default', 'url("' + dataUri + '") 16 20, auto');
+          root.style.setProperty('--cursor-pointer', 'url("' + dataUri + '") 16 20, pointer');
         } catch (e) {}
       })();
     </script>
