@@ -35,7 +35,7 @@ export default function AdminDashboard() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold text-cocoa">Dashboard</h1>
+      <h1 className="font-display text-2xl font-medium text-cocoa">Dashboard</h1>
       <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
           <div key={c.label} className="card flex items-center gap-4 p-5">
@@ -44,7 +44,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <p className="text-xs font-semibold uppercase text-cocoa-light">{c.label}</p>
-              <p className="font-display text-xl font-extrabold text-cocoa">{c.value}</p>
+              <p className="font-display text-xl font-medium text-cocoa">{c.value}</p>
             </div>
           </div>
         ))}

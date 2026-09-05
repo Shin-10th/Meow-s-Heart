@@ -63,7 +63,7 @@ export default function ProductDetail() {
           {product.origin_country && (
             <span className="text-xs font-bold uppercase tracking-wide text-brand-500">{product.origin_country}</span>
           )}
-          <h1 className="mt-2 font-display text-3xl font-extrabold text-cocoa">{product.name}</h1>
+          <h1 className="mt-2 font-display text-3xl font-medium text-cocoa">{product.name}</h1>
 
           <div className="mt-4 flex items-center gap-3">
             <span className="text-2xl font-bold text-cocoa">{formatMMK(product.price_mmk)}</span>

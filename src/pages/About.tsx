@@ -6,7 +6,8 @@ export default function About() {
   return (
     <div className="container-page py-16">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('about.heading')}</h1>
+        <span className="eyebrow">{t('footer.aboutUs')}</span>
+        <h1 className="mt-3 font-display text-4xl font-medium text-cocoa">{t('about.heading')}</h1>
 
         <div className="mt-8 space-y-5 text-left leading-relaxed text-cocoa-light">
           <p>{t('about.p1')}</p>

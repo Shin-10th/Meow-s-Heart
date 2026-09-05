@@ -11,7 +11,7 @@ export default function ProductCard({ product }: { product: Product }) {
   const hasDiscount = product.compare_at_price_mmk && product.compare_at_price_mmk > product.price_mmk
 
   return (
-    <div className="card group flex flex-col overflow-hidden">
+    <div className="card group flex flex-col overflow-hidden transition duration-300 hover:shadow-[0_12px_32px_-8px_rgba(69,58,54,0.16)]">
       <Link to={`/shop/${product.slug}`} className="relative block aspect-square overflow-hidden bg-brand-50">
         {product.image_url ? (
           <img
@@ -25,23 +25,23 @@ export default function ProductCard({ product }: { product: Product }) {
           </div>
         )}
         {product.is_featured && (
-          <span className="absolute left-3 top-3 rounded-full bg-brand-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+          <span className="absolute left-3 top-3 rounded-full bg-gold px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
             {t('common.bestseller')}
           </span>
         )}
         {hasDiscount && (
-          <span className="absolute right-3 top-3 rounded-full bg-cocoa px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
+          <span className="absolute right-3 top-3 rounded-full bg-cocoa px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-white shadow-sm">
             {t('common.sale')}
           </span>
         )}
       </Link>
       <div className="flex flex-1 flex-col p-4">
         {product.origin_country && (
-          <span className="text-[11px] font-bold uppercase tracking-wide text-brand-500">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.14em] text-brand-400">
             {product.origin_country}
           </span>
         )}
-        <Link to={`/shop/${product.slug}`} className="mt-1 line-clamp-2 font-display font-semibold text-cocoa hover:text-brand-600">
+        <Link to={`/shop/${product.slug}`} className="mt-1 line-clamp-2 font-display text-[1.05rem] font-medium text-cocoa hover:text-brand-600">
           {product.name}
         </Link>
         <div className="mt-2 flex items-center gap-2">

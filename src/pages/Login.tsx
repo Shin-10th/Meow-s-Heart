@@ -30,7 +30,7 @@ export default function Login() {
   return (
     <div className="container-page flex min-h-[70vh] items-center justify-center py-16">
       <div className="card w-full max-w-md p-8">
-        <h1 className="text-center font-display text-2xl font-extrabold text-cocoa">{t('login.heading')}</h1>
+        <h1 className="text-center font-display text-2xl font-medium text-cocoa">{t('login.heading')}</h1>
         <p className="mt-1 text-center text-sm text-cocoa-light">{t('login.subtitle')}</p>
 
         {!isSupabaseConfigured && (

@@ -37,7 +37,7 @@ export default function AdminBookings() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold text-cocoa">Consultation Bookings</h1>
+      <h1 className="font-display text-2xl font-medium text-cocoa">Consultation Bookings</h1>
 
       {bookings.length === 0 ? (
         <p className="mt-6 text-cocoa-light">No bookings yet.</p>

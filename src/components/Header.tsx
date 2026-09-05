@@ -22,7 +22,7 @@ export default function Header() {
   ]
 
   return (
-    <header className="sticky top-0 z-40 border-b border-cocoa/10 bg-cream/90 backdrop-blur">
+    <header className="sticky top-0 z-40 border-b border-cocoa/[0.06] bg-cream/85 backdrop-blur-md">
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Logo />
 
@@ -32,8 +32,8 @@ export default function Header() {
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `text-sm font-semibold transition hover:text-brand-600 ${
-                  isActive ? 'text-brand-600' : 'text-cocoa/80'
+                `text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
+                  isActive ? 'text-brand-600' : 'text-cocoa/70'
                 }`
               }
             >
@@ -44,8 +44,8 @@ export default function Header() {
             <NavLink
               to="/admin"
               className={({ isActive }) =>
-                `text-sm font-semibold transition hover:text-brand-600 ${
-                  isActive ? 'text-brand-600' : 'text-cocoa/80'
+                `text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
+                  isActive ? 'text-brand-600' : 'text-cocoa/70'
                 }`
               }
             >
@@ -57,7 +57,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <button
             onClick={toggleLanguage}
-            className="hidden items-center gap-1 rounded-full bg-white px-3 py-1.5 text-xs font-bold text-cocoa ring-1 ring-cocoa/10 transition hover:bg-brand-50 sm:flex"
+            className="hidden items-center gap-1 rounded-full border border-cocoa/10 bg-transparent px-3 py-1.5 text-xs font-medium text-cocoa/70 transition hover:border-brand-300 hover:text-brand-600 sm:flex"
             title="Switch language"
           >
             <Languages className="h-3.5 w-3.5" />
@@ -65,7 +65,7 @@ export default function Header() {
           </button>
           <Link
             to="/loyalty"
-            className="hidden items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-bold text-brand-600 sm:flex"
+            className="hidden items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-600 sm:flex"
             title="Meow's Paws loyalty points"
           >
             <PawPrint className="h-3.5 w-3.5" />

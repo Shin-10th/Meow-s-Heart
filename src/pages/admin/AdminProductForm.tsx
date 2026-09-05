@@ -93,7 +93,7 @@ export default function AdminProductForm() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold text-cocoa">
+      <h1 className="font-display text-2xl font-medium text-cocoa">
         {isEditing ? 'Edit Product' : 'New Product'}
       </h1>
 

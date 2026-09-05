@@ -48,7 +48,8 @@ export default function Shop() {
   return (
     <div className="container-page py-12">
       <div className="text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('shop.heading')}</h1>
+        <span className="eyebrow">{t('nav.shop')}</span>
+        <h1 className="mt-3 font-display text-4xl font-medium text-cocoa">{t('shop.heading')}</h1>
         <p className="mt-2 text-cocoa-light">{t('shop.subtitle')}</p>
       </div>
 

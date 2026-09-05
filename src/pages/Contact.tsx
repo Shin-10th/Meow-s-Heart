@@ -35,14 +35,15 @@ export default function Contact() {
   return (
     <div className="container-page py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('contact.heading')}</h1>
+        <span className="eyebrow">{t('nav.contact')}</span>
+        <h1 className="mt-3 font-display text-4xl font-medium text-cocoa">{t('contact.heading')}</h1>
         <p className="mt-3 text-cocoa-light">{t('contact.subtitle')}</p>
       </div>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <div className="card space-y-6 p-6">
-            <h2 className="font-display text-lg font-bold text-cocoa">{t('contact.infoHeading')}</h2>
+            <h2 className="font-display text-lg font-medium text-cocoa">{t('contact.infoHeading')}</h2>
             <div className="flex gap-3">
               <Phone className="h-5 w-5 shrink-0 text-brand-500" />
               <div>
@@ -84,7 +85,7 @@ export default function Contact() {
 
         <div className="lg:col-span-3">
           <form onSubmit={handleSubmit} className="card space-y-4 p-6">
-            <h2 className="font-display text-lg font-bold text-cocoa">{t('contact.formHeading')}</h2>
+            <h2 className="font-display text-lg font-medium text-cocoa">{t('contact.formHeading')}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label className="label">{t('contact.name')}</label>

@@ -17,14 +17,15 @@ export default function Loyalty() {
     <div className="container-page py-16">
       <div className="mx-auto max-w-2xl text-center">
         <PawPrint className="mx-auto h-10 w-10 text-brand-500" />
-        <h1 className="mt-3 font-display text-4xl font-extrabold text-cocoa">{t('loyalty.heading')}</h1>
+        <span className="eyebrow mt-3 block">{t('nav.loyalty')}</span>
+        <h1 className="mt-2 font-display text-4xl font-medium text-cocoa">{t('loyalty.heading')}</h1>
         <p className="mt-3 text-cocoa-light">{t('loyalty.subtitle')}</p>
       </div>
 
       {user && profile ? (
         <div className="card mx-auto mt-10 max-w-md p-8 text-center">
           <p className="text-sm font-semibold text-cocoa-light">{t('loyalty.yourBalance')}</p>
-          <p className="mt-1 font-display text-5xl font-extrabold text-brand-500">{profile.loyalty_points}</p>
+          <p className="mt-1 font-display text-5xl font-medium text-brand-500">{profile.loyalty_points}</p>
           <p className="text-sm text-cocoa-light">{t('loyalty.paws')}</p>
         </div>
       ) : (
@@ -36,23 +37,23 @@ export default function Loyalty() {
       <div className="mt-14 grid gap-6 sm:grid-cols-3">
         <div className="card p-6 text-center">
           <PawPrint className="mx-auto h-8 w-8 text-brand-500" />
-          <h3 className="mt-3 font-display font-bold text-cocoa">{t('home.loyalty.earn.title')}</h3>
+          <h3 className="mt-3 font-display font-medium text-cocoa">{t('home.loyalty.earn.title')}</h3>
           <p className="mt-1 text-sm text-cocoa-light">{t('home.loyalty.earn.desc')}</p>
         </div>
         <div className="card p-6 text-center">
           <Sparkles className="mx-auto h-8 w-8 text-brand-500" />
-          <h3 className="mt-3 font-display font-bold text-cocoa">{t('home.loyalty.perks.title')}</h3>
+          <h3 className="mt-3 font-display font-medium text-cocoa">{t('home.loyalty.perks.title')}</h3>
           <p className="mt-1 text-sm text-cocoa-light">{t('home.loyalty.perks.desc')}</p>
         </div>
         <div className="card p-6 text-center">
           <Gift className="mx-auto h-8 w-8 text-brand-500" />
-          <h3 className="mt-3 font-display font-bold text-cocoa">{t('home.loyalty.redeem.title')}</h3>
+          <h3 className="mt-3 font-display font-medium text-cocoa">{t('home.loyalty.redeem.title')}</h3>
           <p className="mt-1 text-sm text-cocoa-light">{t('home.loyalty.redeem.desc')}</p>
         </div>
       </div>
 
       <div className="mt-16">
-        <h2 className="text-center font-display text-2xl font-bold text-cocoa">{t('loyalty.tiersHeading')}</h2>
+        <h2 className="text-center font-display text-2xl font-medium text-cocoa">{t('loyalty.tiersHeading')}</h2>
         <div className="mx-auto mt-6 max-w-2xl space-y-4">
           {tiers.map((tier) => (
             <div key={tier.key} className="card flex items-center gap-4 p-5">
@@ -60,7 +61,7 @@ export default function Loyalty() {
                 <Trophy className="h-6 w-6" />
               </div>
               <div>
-                <p className="font-display font-bold text-cocoa">
+                <p className="font-display font-medium text-cocoa">
                   {t(`loyalty.tier.${tier.key}` as any)} · {tier.paws}+ paws
                 </p>
                 <p className="text-sm text-cocoa-light">{t(`loyalty.tier.${tier.key}.perk` as any)}</p>

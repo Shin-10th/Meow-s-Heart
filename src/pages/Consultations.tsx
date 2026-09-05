@@ -67,12 +67,13 @@ export default function Consultations() {
     <div className="py-16">
       <div className="container-page">
         <div className="mx-auto max-w-2xl text-center">
-          <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('consult.heading')}</h1>
+          <span className="eyebrow">{t('nav.consultations')}</span>
+          <h1 className="mt-3 font-display text-4xl font-medium text-cocoa">{t('consult.heading')}</h1>
           <p className="mt-3 text-cocoa-light">{t('consult.subtitle')}</p>
         </div>
 
         <div className="mt-14 text-center">
-          <h2 className="font-display text-2xl font-bold text-cocoa">{t('consult.techHeading')}</h2>
+          <h2 className="font-display text-2xl font-medium text-cocoa">{t('consult.techHeading')}</h2>
           <p className="mx-auto mt-2 max-w-xl text-cocoa-light">{t('consult.techDesc')}</p>
         </div>
 
@@ -82,7 +83,7 @@ export default function Consultations() {
               <div className="grid h-12 w-12 place-items-center rounded-full bg-brand-50 text-brand-600">
                 <tool.icon className="h-6 w-6" />
               </div>
-              <h3 className="mt-4 font-display font-bold text-cocoa">{t(`consult.tool.${tool.key}.name` as TranslationKey)}</h3>
+              <h3 className="mt-4 font-display font-medium text-cocoa">{t(`consult.tool.${tool.key}.name` as TranslationKey)}</h3>
               <p className="mt-1 text-sm font-bold text-brand-500">
                 {tool.price === 0 ? t('consult.free') : formatMMK(tool.price)}
               </p>
@@ -103,7 +104,7 @@ export default function Consultations() {
         </div>
 
         <div className="mt-16">
-          <h2 className="text-center font-display text-2xl font-bold text-cocoa">{t('consult.assistantHeading')}</h2>
+          <h2 className="text-center font-display text-2xl font-medium text-cocoa">{t('consult.assistantHeading')}</h2>
           <div className="card mx-auto mt-6 max-w-xl p-6">
             <div className="space-y-3 text-sm">
               <div className="rounded-2xl rounded-tl-sm bg-brand-50 p-3 text-cocoa">
@@ -127,7 +128,7 @@ export default function Consultations() {
 
         <div id="booking" className="mt-16">
           <div className="mx-auto max-w-2xl text-center">
-            <h2 className="font-display text-2xl font-bold text-cocoa">{t('consult.bookingHeading')}</h2>
+            <h2 className="font-display text-2xl font-medium text-cocoa">{t('consult.bookingHeading')}</h2>
             <p className="mt-2 text-cocoa-light">{t('consult.bookingDesc')}</p>
           </div>
 
@@ -140,7 +141,7 @@ export default function Consultations() {
                   selectedType.key === c.key ? 'ring-2 ring-brand-400' : ''
                 }`}
               >
-                <p className="font-display font-bold text-cocoa">{t(c.nameKey as TranslationKey)}</p>
+                <p className="font-display font-medium text-cocoa">{t(c.nameKey as TranslationKey)}</p>
                 <p className="mt-1 text-sm text-cocoa-light">{t('consult.duration')}: {t('consult.minutes', { n: c.duration })}</p>
                 <p className="mt-1 font-bold text-brand-500">{formatMMK(c.price)}</p>
               </button>
@@ -148,7 +149,7 @@ export default function Consultations() {
           </div>
 
           <form onSubmit={handleBooking} className="card mx-auto mt-8 max-w-2xl space-y-4 p-6">
-            <h3 className="font-display font-bold text-cocoa">
+            <h3 className="font-display font-medium text-cocoa">
               {t('consult.bookingFormHeading', { type: t(selectedType.nameKey as TranslationKey) })}
             </h3>
             <div className="grid gap-4 sm:grid-cols-2">

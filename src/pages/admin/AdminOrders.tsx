@@ -41,7 +41,7 @@ export default function AdminOrders() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold text-cocoa">Orders</h1>
+      <h1 className="font-display text-2xl font-medium text-cocoa">Orders</h1>
 
       {orders.length === 0 ? (
         <p className="mt-6 text-cocoa-light">No orders yet.</p>

@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom'
-import { Heart, Camera, Users, Send } from 'lucide-react'
+import { Camera, Users, Send } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
+import Logo from './Logo'
 
 export default function Footer() {
   const { t } = useLanguage()
@@ -8,12 +9,7 @@ export default function Footer() {
     <footer className="mt-20 border-t border-cocoa/10 bg-white">
       <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="grid h-8 w-8 place-items-center rounded-full bg-brand-500 text-white">
-              <Heart className="h-4 w-4" fill="currentColor" strokeWidth={0} />
-            </span>
-            <span className="font-display text-base font-bold text-cocoa">Meow's Heart</span>
-          </div>
+          <Logo />
           <p className="mt-3 text-sm leading-relaxed text-cocoa-light">{t('footer.tagline')}</p>
           <div className="mt-4 flex gap-3">
             <a href="#" aria-label="Facebook" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">

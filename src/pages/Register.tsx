@@ -32,7 +32,7 @@ export default function Register() {
     return (
       <div className="container-page flex min-h-[70vh] items-center justify-center py-16 text-center">
         <div className="card max-w-md p-8">
-          <h1 className="font-display text-2xl font-extrabold text-cocoa">{t('register.doneHeading')}</h1>
+          <h1 className="font-display text-2xl font-medium text-cocoa">{t('register.doneHeading')}</h1>
           <p className="mt-2 text-cocoa-light">{t('register.doneDesc')}</p>
           <button onClick={() => navigate('/login')} className="btn-primary mt-6">{t('register.goToSignIn')}</button>
         </div>
@@ -43,7 +43,7 @@ export default function Register() {
   return (
     <div className="container-page flex min-h-[70vh] items-center justify-center py-16">
       <div className="card w-full max-w-md p-8">
-        <h1 className="text-center font-display text-2xl font-extrabold text-cocoa">{t('register.heading')}</h1>
+        <h1 className="text-center font-display text-2xl font-medium text-cocoa">{t('register.heading')}</h1>
         <p className="mt-1 text-center text-sm text-cocoa-light">{t('register.subtitle')}</p>
 
         {!isSupabaseConfigured && (

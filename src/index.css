@@ -1,24 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-50: #fff0f6;
-  --color-brand-100: #ffe0ee;
-  --color-brand-200: #ffc2de;
-  --color-brand-300: #ff96c4;
-  --color-brand-400: #ff5fa3;
-  --color-brand-500: #f9418a;
-  --color-brand-600: #e02270;
-  --color-brand-700: #b8175a;
-  --color-brand-800: #93154a;
-  --color-brand-900: #7a153f;
+  /* Muted, premium rose palette (was a brighter magenta-pink) */
+  --color-brand-50: #fdf4f3;
+  --color-brand-100: #fbe7e5;
+  --color-brand-200: #f4cdc9;
+  --color-brand-300: #e9aaa5;
+  --color-brand-400: #db8781;
+  --color-brand-500: #c76d68;
+  --color-brand-600: #ad5450;
+  --color-brand-700: #8c4441;
+  --color-brand-800: #703937;
+  --color-brand-900: #5c302f;
 
-  --color-cream: #fff8fa;
-  --color-cream-dark: #ffeaf2;
-  --color-cocoa: #5b3a29;
-  --color-cocoa-light: #8a6a55;
+  --color-cream: #fdf9f6;
+  --color-cream-dark: #f6ece5;
+  --color-cocoa: #453a36;
+  --color-cocoa-light: #8c7c74;
 
-  --font-display: "Poppins", system-ui, sans-serif;
-  --font-body: "Nunito", system-ui, sans-serif;
+  /* Champagne/gold accent for a premium touch */
+  --color-gold: #c6a15b;
+  --color-gold-light: #e8dcc0;
+
+  --font-display: "Fraunces", "Georgia", serif;
+  --font-body: "Work Sans", system-ui, sans-serif;
 }
 
 @layer base {
@@ -32,26 +37,43 @@
   }
   h1, h2, h3, h4, h5 {
     font-family: var(--font-display);
+    letter-spacing: -0.01em;
   }
 }
 
 @layer utilities {
   .container-page {
-    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+    @apply mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10;
   }
+
+  /* Small tracked label, e.g. "OUR STORY" above a heading — a common
+     premium-beauty typographic motif */
+  .eyebrow {
+    @apply inline-block text-xs font-semibold uppercase tracking-[0.2em] text-brand-500;
+  }
+
   .btn-primary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-6 py-3 font-semibold text-white shadow-sm transition hover:bg-brand-600 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-full bg-brand-500 px-7 py-3.5 font-semibold text-white shadow-[0_8px_24px_-8px_rgba(199,109,104,0.55)] transition duration-200 hover:-translate-y-0.5 hover:bg-brand-600 hover:shadow-[0_12px_28px_-8px_rgba(199,109,104,0.6)] disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0;
   }
   .btn-secondary {
-    @apply inline-flex items-center justify-center gap-2 rounded-full border-2 border-brand-500 px-6 py-3 font-semibold text-brand-600 transition hover:bg-brand-50 disabled:opacity-50 disabled:pointer-events-none;
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-cocoa/20 bg-transparent px-7 py-3.5 font-semibold text-cocoa transition duration-200 hover:-translate-y-0.5 hover:border-brand-400 hover:text-brand-600 disabled:opacity-50 disabled:pointer-events-none disabled:hover:translate-y-0;
   }
   .card {
-    @apply rounded-2xl bg-white shadow-sm ring-1 ring-black/5;
+    @apply rounded-[1.75rem] border border-cocoa/[0.06] bg-white shadow-[0_4px_24px_-8px_rgba(69,58,54,0.08)];
   }
   .input {
-    @apply w-full rounded-xl border border-cocoa/15 bg-white px-4 py-2.5 text-sm text-cocoa placeholder:text-cocoa-light/60 focus:border-brand-400 focus:outline-none focus:ring-2 focus:ring-brand-100;
+    @apply w-full rounded-2xl border border-cocoa/15 bg-white px-4 py-3 text-sm text-cocoa placeholder:text-cocoa-light/60 transition focus:border-brand-300 focus:outline-none focus:ring-4 focus:ring-brand-100/70;
   }
   .label {
     @apply mb-1.5 block text-sm font-semibold text-cocoa;
+  }
+
+  /* gentle entrance animation for hero/section content */
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-up {
+    animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 }

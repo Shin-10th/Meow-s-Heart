@@ -35,7 +35,7 @@ export default function AdminProducts() {
   return (
     <div>
       <div className="flex items-center justify-between">
-        <h1 className="font-display text-2xl font-extrabold text-cocoa">Products</h1>
+        <h1 className="font-display text-2xl font-medium text-cocoa">Products</h1>
         <Link to="/admin/products/new" className="btn-primary px-4 py-2 text-sm">
           <Plus className="h-4 w-4" /> New Product
         </Link>

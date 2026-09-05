@@ -12,7 +12,7 @@ export default function Cart() {
     return (
       <div className="container-page py-20 text-center">
         <ShoppingBag className="mx-auto h-12 w-12 text-brand-200" />
-        <h1 className="mt-4 font-display text-2xl font-bold text-cocoa">{t('cart.emptyHeading')}</h1>
+        <h1 className="mt-4 font-display text-2xl font-medium text-cocoa">{t('cart.emptyHeading')}</h1>
         <p className="mt-2 text-cocoa-light">{t('cart.emptyDesc')}</p>
         <Link to="/shop" className="btn-primary mt-6 inline-flex">{t('cart.browseShop')}</Link>
       </div>
@@ -21,7 +21,7 @@ export default function Cart() {
 
   return (
     <div className="container-page py-12">
-      <h1 className="font-display text-3xl font-extrabold text-cocoa">{t('cart.heading')}</h1>
+      <h1 className="font-display text-3xl font-medium text-cocoa">{t('cart.heading')}</h1>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
         <div className="space-y-4 lg:col-span-2">
@@ -58,7 +58,7 @@ export default function Cart() {
         </div>
 
         <div className="card h-fit p-6">
-          <h2 className="font-display text-lg font-bold text-cocoa">{t('cart.orderSummary')}</h2>
+          <h2 className="font-display text-lg font-medium text-cocoa">{t('cart.orderSummary')}</h2>
           <div className="mt-4 flex justify-between text-sm text-cocoa-light">
             <span>{t('cart.subtotal')}</span>
             <span className="font-semibold text-cocoa">{formatMMK(subtotal)}</span>

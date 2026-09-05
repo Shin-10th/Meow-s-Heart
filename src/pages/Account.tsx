@@ -45,7 +45,7 @@ export default function Account() {
     <div className="container-page py-12">
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
-          <h1 className="font-display text-3xl font-extrabold text-cocoa">
+          <h1 className="font-display text-3xl font-medium text-cocoa">
             {t('account.hi')}{profile?.full_name ? `, ${profile.full_name}` : ''} 👋
           </h1>
           <p className="mt-1 text-cocoa-light">{user?.email}</p>
@@ -62,7 +62,7 @@ export default function Account() {
           </div>
           <div>
             <p className="text-sm text-cocoa-light">{t('account.paws')}</p>
-            <p className="font-display text-2xl font-extrabold text-cocoa">{profile?.loyalty_points ?? 0}</p>
+            <p className="font-display text-2xl font-medium text-cocoa">{profile?.loyalty_points ?? 0}</p>
           </div>
         </div>
         <div className="card flex items-center gap-4 p-6">
@@ -71,13 +71,13 @@ export default function Account() {
           </div>
           <div>
             <p className="text-sm text-cocoa-light">{t('account.ordersPlaced')}</p>
-            <p className="font-display text-2xl font-extrabold text-cocoa">{orders.length}</p>
+            <p className="font-display text-2xl font-medium text-cocoa">{orders.length}</p>
           </div>
         </div>
       </div>
 
       <div className="mt-10">
-        <h2 className="font-display text-xl font-bold text-cocoa">{t('account.orderHistory')}</h2>
+        <h2 className="font-display text-xl font-medium text-cocoa">{t('account.orderHistory')}</h2>
         {loading ? (
           <PawSpinner label={t('account.loadingOrders')} />
         ) : orders.length === 0 ? (

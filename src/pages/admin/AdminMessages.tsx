@@ -27,7 +27,7 @@ export default function AdminMessages() {
 
   return (
     <div>
-      <h1 className="font-display text-2xl font-extrabold text-cocoa">Contact Messages</h1>
+      <h1 className="font-display text-2xl font-medium text-cocoa">Contact Messages</h1>
 
       {messages.length === 0 ? (
         <p className="mt-6 text-cocoa-light">No messages yet.</p>

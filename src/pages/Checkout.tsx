@@ -44,7 +44,7 @@ export default function Checkout() {
     return (
       <div className="container-page py-20 text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-brand-500" />
-        <h1 className="mt-4 font-display text-2xl font-bold text-cocoa">{t('checkout.thankYou')}</h1>
+        <h1 className="mt-4 font-display text-2xl font-medium text-cocoa">{t('checkout.thankYou')}</h1>
         <p className="mt-2 text-cocoa-light">{t('checkout.thankYouDesc', { phone })}</p>
         <Link to="/account" className="btn-primary mt-6 inline-flex">{t('checkout.viewOrders')}</Link>
       </div>
@@ -101,7 +101,7 @@ export default function Checkout() {
 
   return (
     <div className="container-page py-12">
-      <h1 className="font-display text-3xl font-extrabold text-cocoa">{t('checkout.heading')}</h1>
+      <h1 className="font-display text-3xl font-medium text-cocoa">{t('checkout.heading')}</h1>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
         <form onSubmit={handleSubmit} className="card space-y-4 p-6 lg:col-span-2">
@@ -130,7 +130,7 @@ export default function Checkout() {
         </form>
 
         <div className="card h-fit p-6">
-          <h2 className="font-display text-lg font-bold text-cocoa">{t('checkout.orderSummary')}</h2>
+          <h2 className="font-display text-lg font-medium text-cocoa">{t('checkout.orderSummary')}</h2>
           <ul className="mt-4 space-y-2 text-sm">
             {items.map(({ product, quantity }) => (
               <li key={product.id} className="flex justify-between text-cocoa-light">

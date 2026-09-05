@@ -13,7 +13,7 @@ export default function AdminLayout() {
   return (
     <div className="container-page grid gap-8 py-10 lg:grid-cols-[220px_1fr]">
       <aside className="lg:sticky lg:top-24 lg:h-fit">
-        <h2 className="mb-3 font-display text-lg font-bold text-cocoa">Admin</h2>
+        <h2 className="mb-3 font-display text-lg font-medium text-cocoa">Admin</h2>
         <nav className="flex gap-2 overflow-x-auto lg:flex-col lg:overflow-visible">
           {links.map((link) => (
             <NavLink
