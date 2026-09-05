@@ -1,15 +1,16 @@
-import { useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 /**
- * A single roaming cat companion, fixed to the viewport, that prowls
- * all the way around the screen's edges — not just the bottom — and
- * "jumps" around each corner as it turns from one edge to the next.
+ * A single roaming cat companion that explores the actual page layout
+ * — walking the borders of cards, the header, and the footer, jumping
+ * across the gaps between them, sometimes sitting on a corner, and
+ * occasionally wandering the outer window edge too — rather than
+ * following one fixed rectangular path around the screen.
+ *
  * Loosely inspired by desktop "cat companion" pets
  * (https://sea-salt-crackers.itch.io/cat-companion) — this is an
  * original re-implementation for the web, not a copy of that game's
- * assets or code, adapted to what a browser can actually do: it
- * walks, jumps at corners, sits, and naps on its own, and can be
- * clicked/"pet".
+ * assets or code.
  *
  * The cat is drawn as an inline SVG colored entirely with the site's
  * theme CSS variables (see src/themes.ts / ThemeContext), so it
@@ -19,31 +20,40 @@ import { useEffect, useRef, useState, type CSSProperties } from 'react'
  * shows up once per page rather than per product.
  *
  * --- How the movement works ---
- * Position is tracked as a single number `t` in [0, 400) representing
- * distance traveled around the screen's perimeter (100 units per
- * edge: top, right, bottom, left, in that clockwise order). Walking
- * within an edge smoothly animates that edge's position percentage;
- * reaching a corner (t crossing a multiple of 100) switches which
- * edge the cat is anchored to and rotates it to lie flush against the
- * new edge, which we mark as a quick "jump" (a little hop animation)
- * rather than a smooth slide, since the position math is genuinely
- * discontinuous there (different CSS properties altogether).
+ * At any moment the cat has a "target" — either a real DOM element
+ * (a `.card`, the `<header>`, the `<footer>`) or the viewport itself
+ * — and a position `t` in [0, 400) measured around that target's own
+ * perimeter (100 units per edge: top, right, bottom, left, clockwise).
+ * Walking smoothly slides it along the current edge. Reaching a
+ * corner of the SAME target rotates it onto the next edge (a small
+ * hop). After walking a few edges of one target, instead of
+ * continuing around it, the cat picks a different target (biased
+ * toward ones nearby) and leaps to the closest corner of it — a
+ * bigger hop, standing in for "jumping across the gap" between two
+ * widgets. Rects are read live via getBoundingClientRect(), so the
+ * cat stays glued to its target as the page scrolls or resizes.
  */
 
 type Edge = 'top' | 'right' | 'bottom' | 'left'
 type CatState = 'walk' | 'sit' | 'sleep'
+type Rect = { top: number; left: number; width: number; height: number }
+type Target = { key: string; el: HTMLElement | null }
+type JumpSize = 'small' | 'big'
 
 const STATE_TIMING: Record<CatState, { minMs: number; maxMs: number }> = {
-  walk: { minMs: 3500, maxMs: 7500 },
-  sit: { minMs: 3000, maxMs: 6500 },
-  sleep: { minMs: 6000, maxMs: 13000 },
+  walk: { minMs: 2600, maxMs: 5500 },
+  sit: { minMs: 2500, maxMs: 5500 },
+  sleep: { minMs: 5000, maxMs: 11000 },
 }
 
 const EDGE_ROTATION: Record<Edge, number> = { top: 180, right: -90, bottom: 0, left: 90 }
-const EDGE_INSET_PX = 22
+// Widgets the cat is willing to explore — cards, the header, the
+// footer — plus the viewport itself is always added as a fallback
+// target (see collectTargets).
+const WIDGET_SELECTOR = '.card, header, footer'
+const MIN_WIDGET_WIDTH = 70
+const MIN_WIDGET_HEIGHT = 50
 
-// Weighted so the cat walks most often, sits sometimes, and naps
-// occasionally — never picks the state it's already in.
 function pickNextState(current: CatState): CatState {
   const options: { state: CatState; weight: number }[] = [
     { state: 'walk', weight: 5 },
@@ -64,27 +74,75 @@ function wrap(n: number): number {
   return ((n % 400) + 400) % 400
 }
 
-function perimeterToPosition(t: number): { xPercent: number; yPercent: number; edge: Edge } {
-  const p = wrap(t)
-  if (p < 100) return { xPercent: p, yPercent: 0, edge: 'top' }
-  if (p < 200) return { xPercent: 100, yPercent: p - 100, edge: 'right' }
-  if (p < 300) return { xPercent: 100 - (p - 200), yPercent: 100, edge: 'bottom' }
-  return { xPercent: 0, yPercent: 100 - (p - 300), edge: 'left' }
+function viewportRect(): Rect {
+  return { top: 0, left: 0, width: window.innerWidth, height: window.innerHeight }
 }
 
-function anchorStyle(edge: Edge, xPercent: number, yPercent: number): CSSProperties {
-  const inset = `${EDGE_INSET_PX}px`
-  switch (edge) {
-    case 'top':
-      return { top: inset, left: `${xPercent}%` }
-    case 'bottom':
-      return { bottom: inset, left: `${xPercent}%` }
-    case 'left':
-      return { left: inset, top: `${yPercent}%` }
-    case 'right':
-    default:
-      return { right: inset, top: `${yPercent}%` }
+function getRect(target: Target): Rect {
+  if (!target.el || !document.body.contains(target.el)) return viewportRect()
+  const r = target.el.getBoundingClientRect()
+  return { top: r.top, left: r.left, width: r.width, height: r.height }
+}
+
+function perimeterToPoint(rect: Rect, t: number): { x: number; y: number; edge: Edge } {
+  const p = wrap(t)
+  const { top, left, width, height } = rect
+  if (p < 100) return { x: left + (p / 100) * width, y: top, edge: 'top' }
+  if (p < 200) return { x: left + width, y: top + ((p - 100) / 100) * height, edge: 'right' }
+  if (p < 300) return { x: left + width - ((p - 200) / 100) * width, y: top + height, edge: 'bottom' }
+  return { x: left, y: top + height - ((p - 300) / 100) * height, edge: 'left' }
+}
+
+function nearestCornerT(rect: Rect, point: { x: number; y: number }): number {
+  const corners: { t: number; x: number; y: number }[] = [
+    { t: 0, x: rect.left, y: rect.top },
+    { t: 100, x: rect.left + rect.width, y: rect.top },
+    { t: 200, x: rect.left + rect.width, y: rect.top + rect.height },
+    { t: 300, x: rect.left, y: rect.top + rect.height },
+  ]
+  let best = corners[0]
+  let bestDist = Infinity
+  for (const c of corners) {
+    const d = (c.x - point.x) ** 2 + (c.y - point.y) ** 2
+    if (d < bestDist) {
+      bestDist = d
+      best = c
+    }
   }
+  return best.t
+}
+
+function collectTargets(): Target[] {
+  const targets: Target[] = [{ key: 'viewport', el: null }]
+  document.querySelectorAll<HTMLElement>(WIDGET_SELECTOR).forEach((el, i) => {
+    const r = el.getBoundingClientRect()
+    if (r.width < MIN_WIDGET_WIDTH || r.height < MIN_WIDGET_HEIGHT) return
+    if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) return
+    targets.push({ key: `w${i}-${Math.round(r.left)}-${Math.round(r.top)}`, el })
+  })
+  return targets
+}
+
+function rectCenter(rect: Rect): { x: number; y: number } {
+  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
+}
+
+function pickNextTarget(current: Target, pool: Target[]): Target {
+  const candidates = pool.filter((c) => c.key !== current.key)
+  if (candidates.length === 0) return current
+  if (Math.random() < 0.75) {
+    const currentCenter = rectCenter(getRect(current))
+    const sorted = [...candidates].sort((a, b) => {
+      const ca = rectCenter(getRect(a))
+      const cb = rectCenter(getRect(b))
+      const da = (ca.x - currentCenter.x) ** 2 + (ca.y - currentCenter.y) ** 2
+      const db = (cb.x - currentCenter.x) ** 2 + (cb.y - currentCenter.y) ** 2
+      return da - db
+    })
+    const poolSize = Math.max(1, Math.ceil(sorted.length * 0.4))
+    return sorted[Math.floor(Math.random() * poolSize)]
+  }
+  return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
 /** Chibi side-profile cat, entirely theme-colored via CSS variables. */
@@ -141,18 +199,21 @@ function HeartIcon() {
 }
 
 export default function CatCompanion() {
-  const [t, setT] = useState<number>(() => Math.random() * 400)
+  const [, forceTick] = useState(0)
+  const [t, setT] = useState<number>(0)
   const [clockwise, setClockwise] = useState(true)
   const [state, setState] = useState<CatState>('walk')
-  const [isJumping, setIsJumping] = useState(false)
+  const [isJumping, setIsJumping] = useState<JumpSize | null>(null)
   const [hearts, setHearts] = useState<number[]>([])
 
+  const targetRef = useRef<Target>({ key: 'viewport', el: null })
   const tRef = useRef(t)
   const clockwiseRef = useRef(clockwise)
+  const edgesWalkedRef = useRef(0)
+  const edgeBudgetRef = useRef(1 + Math.floor(Math.random() * 3))
   const jumpTimerRef = useRef<number | undefined>(undefined)
-
-  const position = perimeterToPosition(t)
-  const prevEdgeRef = useRef<Edge>(position.edge)
+  const prevEdgeRef = useRef<Edge | null>(null)
+  const prevTargetKeyRef = useRef<string>('viewport')
 
   useEffect(() => {
     tRef.current = t
@@ -161,55 +222,113 @@ export default function CatCompanion() {
     clockwiseRef.current = clockwise
   }, [clockwise])
 
-  function triggerJump() {
-    setIsJumping(false)
+  // Pick an initial target once the page's real content has rendered.
+  useEffect(() => {
+    const pool = collectTargets()
+    const initial = pool.length > 1 ? pool[1 + Math.floor(Math.random() * (pool.length - 1))] : pool[0]
+    targetRef.current = initial
+    prevTargetKeyRef.current = initial.key
+    setT(Math.floor(Math.random() * 400))
+  }, [])
+
+  // Keep the cat glued to its current widget as the page scrolls or
+  // the window resizes (their rects are viewport-relative, so they
+  // shift immediately).
+  useEffect(() => {
+    let raf: number | undefined
+    function onViewportChange() {
+      if (raf !== undefined) return
+      raf = requestAnimationFrame(() => {
+        raf = undefined
+        forceTick((n) => n + 1)
+      })
+    }
+    window.addEventListener('scroll', onViewportChange, { passive: true, capture: true })
+    window.addEventListener('resize', onViewportChange)
+    return () => {
+      window.removeEventListener('scroll', onViewportChange, true)
+      window.removeEventListener('resize', onViewportChange)
+      if (raf !== undefined) cancelAnimationFrame(raf)
+    }
+  }, [])
+
+  function triggerJump(size: JumpSize) {
+    setIsJumping(null)
     window.clearTimeout(jumpTimerRef.current)
-    // Re-trigger the animation even if it's already mid-jump.
     requestAnimationFrame(() => {
-      setIsJumping(true)
-      jumpTimerRef.current = window.setTimeout(() => setIsJumping(false), 460)
+      setIsJumping(size)
+      jumpTimerRef.current = window.setTimeout(() => setIsJumping(null), size === 'big' ? 620 : 460)
     })
   }
 
-  // Jump whenever the cat crosses onto a new edge.
-  useEffect(() => {
-    if (prevEdgeRef.current !== position.edge) {
-      prevEdgeRef.current = position.edge
-      triggerJump()
-    }
-  }, [position.edge])
+  const rect = getRect(targetRef.current)
+  const position = perimeterToPoint(rect, t)
 
-  // Main behavior clock: advances the walk, or waits out a sit/sleep.
+  // Jump whenever the cat crosses onto a new edge of the same widget,
+  // or lands on a different widget entirely.
+  useEffect(() => {
+    const edgeChanged = prevEdgeRef.current !== null && prevEdgeRef.current !== position.edge
+    const targetChanged = prevTargetKeyRef.current !== targetRef.current.key
+    if (edgeChanged || targetChanged) triggerJump(targetChanged ? 'big' : 'small')
+    prevEdgeRef.current = position.edge
+    prevTargetKeyRef.current = targetRef.current.key
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [t])
+
+  // Main behavior clock: advances the walk (within a widget, around
+  // its corners, or leaping to another one), or waits out a sit/sleep.
   useEffect(() => {
     const { minMs, maxMs } = STATE_TIMING[state]
     const duration = minMs + Math.random() * (maxMs - minMs)
 
     const timer = window.setTimeout(() => {
       if (state === 'walk') {
-        const delta = 10 + Math.random() * 24
-        const dir = clockwiseRef.current ? 1 : -1
-        const current = tRef.current
-        const proposed = current + dir * delta
-        const currentEdgeIdx = Math.floor(wrap(current) / 100)
-        const proposedEdgeIdx = Math.floor(wrap(proposed) / 100)
+        // Make sure the target we're on still exists; fall back to
+        // the viewport if the page navigated away underneath the cat.
+        if (targetRef.current.el && !document.body.contains(targetRef.current.el)) {
+          targetRef.current = { key: 'viewport', el: null }
+        }
 
-        if (currentEdgeIdx !== proposedEdgeIdx && wrap(current) % 100 !== 0) {
-          // Walk right up to the corner this tick; the next tick will
-          // cross into the new edge (and read as a jump).
+        const currentRect = getRect(targetRef.current)
+        const current = tRef.current
+        const wrappedCurrent = wrap(current)
+        const atBoundary = wrappedCurrent % 100 === 0
+        const delta = 14 + Math.random() * 28
+        const dir = clockwiseRef.current ? 1 : -1
+        const proposed = current + dir * delta
+        const currentEdgeIdx = Math.floor(wrappedCurrent / 100)
+        const proposedEdgeIdx = Math.floor(wrap(proposed) / 100)
+        const wouldCross = currentEdgeIdx !== proposedEdgeIdx
+
+        if (wouldCross && !atBoundary) {
+          // Walk right up to the corner this tick; crossing it happens
+          // on the next tick, once we're sitting exactly on it.
           const boundary = dir > 0 ? (currentEdgeIdx + 1) * 100 : currentEdgeIdx * 100
           setT(wrap(boundary))
+        } else if (atBoundary && edgesWalkedRef.current >= edgeBudgetRef.current) {
+          // Leap to a different widget instead of continuing around
+          // this one.
+          const point = perimeterToPoint(currentRect, current)
+          const pool = collectTargets()
+          const next = pickNextTarget(targetRef.current, pool)
+          const nextRect = getRect(next)
+          targetRef.current = next
+          edgesWalkedRef.current = 0
+          edgeBudgetRef.current = 1 + Math.floor(Math.random() * 3)
+          setT(nearestCornerT(nextRect, point))
         } else {
+          if (atBoundary) edgesWalkedRef.current += 1
           setT(wrap(proposed))
         }
 
         // A cat occasionally changes its mind about direction...
         if (Math.random() < 0.22) setClockwise((c) => !c)
         // ...or just play-pounces in place.
-        if (Math.random() < 0.15) triggerJump()
+        if (Math.random() < 0.12) triggerJump('small')
       }
 
       const next = pickNextState(state)
-      if (state !== 'walk' && next === 'walk') triggerJump()
+      if (state !== 'walk' && next === 'walk') triggerJump('small')
       setState(next)
     }, duration)
 
@@ -228,13 +347,19 @@ export default function CatCompanion() {
 
   return (
     <div className="cat-companion-stage">
-      <div className="cat-companion-anchor" style={anchorStyle(position.edge, position.xPercent, position.yPercent)}>
+      <div className="cat-companion-anchor" style={{ top: `${position.y}px`, left: `${position.x}px` }}>
         <div
           className="cat-companion"
           data-state={state}
           style={{ transform: `rotate(${EDGE_ROTATION[position.edge]}deg)` }}
         >
-          <div className={`cat-companion-hopper${isJumping ? ' cat-companion-jump' : ''}`}>
+          <div
+            className={
+              'cat-companion-hopper' +
+              (isJumping === 'small' ? ' cat-companion-jump' : '') +
+              (isJumping === 'big' ? ' cat-companion-jump-big' : '')
+            }
+          >
             <button
               type="button"
               className="cat-companion-hit"

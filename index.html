@@ -7,11 +7,11 @@
     <title>Meow's Heart - Premium Beauty Products from Asia</title>
     <meta name="description" content="Trendy, authentic, and affordable beauty solutions from Korea, Thailand, and China. Discover your purr-fect beauty look with Meow's Heart." />
     <!--
-      Applies the visitor's saved color theme (and the matching paw
-      cursor) before the stylesheet paints, so there's no flash of the
-      default palette or the wrong-colored cursor. Keep this in sync
-      with src/themes.ts (colors) and src/lib/cursor.ts (paw shape) if
-      you change either.
+      Applies the visitor's saved color theme before the stylesheet
+      paints, so there's no flash of the default palette. Keep this in
+      sync with src/themes.ts if you add/change a theme. (The cursor
+      and cat companion don't need anything here — they're plain React
+      components styled with these same CSS variables.)
     -->
     <script>
       (function () {
@@ -26,26 +26,6 @@
           var vars = THEMES[saved] || THEMES.classic;
           var root = document.documentElement;
           for (var k in vars) { root.style.setProperty(k, vars[k]); }
-
-          function buildPawSvg(light, mid, dark) {
-            return '<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 32 32">' +
-              '<defs><radialGradient id="mh-paw" cx="35%" cy="30%" r="75%">' +
-              '<stop offset="0%" stop-color="' + light + '"/>' +
-              '<stop offset="65%" stop-color="' + mid + '"/>' +
-              '<stop offset="100%" stop-color="' + dark + '"/>' +
-              '</radialGradient></defs>' +
-              '<g fill="url(#mh-paw)" stroke="#ffffff" stroke-width="1.1">' +
-              '<ellipse cx="16" cy="21" rx="7" ry="6"/>' +
-              '<circle cx="8" cy="13" r="3.4"/>' +
-              '<circle cx="13.3" cy="9.2" r="3.7"/>' +
-              '<circle cx="18.7" cy="9.2" r="3.7"/>' +
-              '<circle cx="24" cy="13" r="3.4"/>' +
-              '</g></svg>';
-          }
-          var svg = buildPawSvg(vars['--color-brand-100'], vars['--color-brand-300'], vars['--color-brand-500']);
-          var dataUri = 'data:image/svg+xml,' + encodeURIComponent(svg);
-          root.style.setProperty('--cursor-default', 'url("' + dataUri + '") 11 14, auto');
-          root.style.setProperty('--cursor-pointer', 'url("' + dataUri + '") 11 14, pointer');
         } catch (e) {}
       })();
     </script>

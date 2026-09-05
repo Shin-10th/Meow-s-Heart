@@ -43,19 +43,14 @@
     letter-spacing: -0.01em;
   }
 
-  /* Cat's-paw cursor: a heel pad plus four toe pads splayed outward,
-     glossy-shaded with a radial gradient. Built at runtime from the
-     active color theme's own brand shades (see src/lib/cursor.ts and
-     ThemeContext), so the cursor always matches whichever palette the
-     visitor picked — these custom properties are set in JS, with a
-     safe fallback here in case that hasn't run yet. Hotspot sits on
-     the heel pad. Text inputs keep the normal I-beam cursor for
-     usability. */
+  /* The native pointer is hidden almost everywhere in favor of the
+     custom paw+heart cursor drawn by CustomCursor.tsx (which can do
+     things a native `cursor: url()` image can't, like an idle "z z z"
+     animation). Real text-entry fields keep the native text cursor —
+     both so typing still feels normal, and so CustomCursor.tsx can
+     hide its own graphic over them without leaving no cursor at all. */
   html,
-  body {
-    cursor: var(--cursor-default, auto);
-  }
-
+  body,
   a,
   button,
   [role="button"],
@@ -64,8 +59,23 @@
   input[type="submit"],
   input[type="button"],
   input[type="checkbox"],
-  input[type="radio"] {
-    cursor: var(--cursor-pointer, pointer);
+  input[type="radio"],
+  input[type="range"] {
+    cursor: none;
+  }
+
+  input:not([type]),
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="tel"],
+  input[type="url"],
+  input[type="password"],
+  input[type="number"],
+  input[type="date"],
+  textarea,
+  [contenteditable="true"] {
+    cursor: text;
   }
 }
 
@@ -105,34 +115,98 @@
     animation: fade-up 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
   }
 
-  /* Site-wide cat companion (see CatCompanion.tsx): a single cat that
-     roams all the way around the edges of the viewport — not just the
-     bottom — pausing to sit or nap, and hopping a little at each
-     corner and now and then mid-walk. The stage covers the whole
-     viewport and ignores pointer events so it never blocks clicks;
-     only the cat's own small hit area is interactive, so it can be
-     clicked/"pet".
+  /* ---- Custom cursor (see CustomCursor.tsx) ---- */
+  /* A JS-tracked DOM cursor rather than a native `cursor: url()`
+     image, so it can (a) actually look like an angled pointer with a
+     small heart tucked at its tip instead of a flat centered stamp,
+     and (b) animate "z z z" while idle and make it vanish the instant
+     the mouse moves — neither is possible with a native cursor image.
+     Colored with theme CSS variables, so it recolors live with the
+     theme switcher automatically. */
+  .custom-cursor {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.15s ease;
+  }
+  .custom-cursor.is-visible {
+    opacity: 1;
+  }
+  .custom-cursor-paw {
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    width: 30px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 2px 3px rgba(69, 58, 54, 0.3));
+  }
+  .custom-cursor-zzz {
+    position: absolute;
+    left: 22px;
+    top: -8px;
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-brand-500);
+    opacity: 0;
+  }
+  .custom-cursor-zzz--1 {
+    font-size: 0.62rem;
+  }
+  .custom-cursor-zzz--2 {
+    font-size: 0.85rem;
+    left: 29px;
+    top: -14px;
+  }
+  .custom-cursor.is-idle .custom-cursor-zzz--1 {
+    animation: cursor-zzz-float 1.7s ease-in-out infinite;
+    animation-delay: 0s;
+  }
+  .custom-cursor.is-idle .custom-cursor-zzz--2 {
+    animation: cursor-zzz-float 1.7s ease-in-out infinite;
+    animation-delay: 0.55s;
+  }
+  @keyframes cursor-zzz-float {
+    0% { opacity: 0; transform: translate(0, 0) scale(0.7); }
+    15% { opacity: 1; transform: translate(2px, -4px) scale(0.9); }
+    70% { opacity: 1; transform: translate(6px, -14px) scale(1); }
+    100% { opacity: 0; transform: translate(8px, -20px) scale(1.05); }
+  }
 
-     Structure: anchor (positions + centers on the current edge
-     coordinate) > companion (rotates to lie flush against that edge)
-     > hopper (plays the little jump/pounce hop) > hit button (flips
-     to face the direction of travel) > body (the SVG cat itself, with
-     its own walk-bob/breathe animation). Each layer only touches its
-     own transform, so they combine without fighting each other. */
+  /* ---- Cat companion (see CatCompanion.tsx) ---- */
+  /* A single cat that roams around the actual page layout — walking
+     the borders of cards/header/footer, jumping between them across
+     the gaps, sometimes sitting on a corner or exploring the outer
+     window edge — rather than a fixed rectangular path. The stage
+     covers the whole viewport and ignores pointer events so it never
+     blocks clicks; only the cat's own small hit area is interactive,
+     so it can be clicked/"pet".
+
+     Structure: anchor (absolute pixel position, centered on the exact
+     border point CatCompanion.tsx computed) > companion (rotates to
+     lie flush against whichever of that widget's 4 edges it's on) >
+     hopper (plays the little jump/pounce hop, bigger when leaping
+     between widgets) > hit button (flips to face the direction of
+     travel) > body (the SVG cat, with its own walk-bob/breathe
+     animation). Each layer only touches its own transform, so they
+     combine without fighting each other. */
   .cat-companion-stage {
     position: fixed;
     inset: 0;
     pointer-events: none;
-    z-index: 40;
+    z-index: 50;
   }
   .cat-companion-anchor {
     position: fixed;
     transform: translate(-50%, -50%);
     transition:
-      top 1.5s ease-in-out,
-      left 1.5s ease-in-out,
-      right 1.5s ease-in-out,
-      bottom 1.5s ease-in-out;
+      top 1s ease-in-out,
+      left 1s ease-in-out;
   }
   .cat-companion {
     transition: transform 0.4s ease-out;
@@ -144,10 +218,19 @@
   .cat-companion-jump {
     animation: cat-jump-hop 0.46s ease-out;
   }
+  .cat-companion-jump-big {
+    animation: cat-jump-hop-big 0.62s ease-out;
+  }
   @keyframes cat-jump-hop {
     0% { transform: translateY(0) scale(1, 1); }
     30% { transform: translateY(-14px) scale(0.92, 1.1); }
     58% { transform: translateY(-14px) scale(1.05, 0.92); }
+    100% { transform: translateY(0) scale(1, 1); }
+  }
+  @keyframes cat-jump-hop-big {
+    0% { transform: translateY(0) scale(1, 1); }
+    28% { transform: translateY(-24px) scale(0.86, 1.18); }
+    62% { transform: translateY(-24px) scale(1.1, 0.88); }
     100% { transform: translateY(0) scale(1, 1); }
   }
   .cat-companion-hit {
@@ -160,7 +243,7 @@
   }
   .cat-companion-body {
     display: block;
-    width: 2.75rem;
+    width: 2.5rem;
     height: auto;
     filter: drop-shadow(0 3px 5px rgba(69, 58, 54, 0.3));
     transform-origin: 50% 100%;

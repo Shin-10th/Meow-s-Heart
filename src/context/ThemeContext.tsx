@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { themes, DEFAULT_THEME_ID, type ColorTheme } from '../themes'
-import { applyCursorTheme } from '../lib/cursor'
 
 const STORAGE_KEY = 'meows-heart-theme'
 
@@ -18,7 +17,6 @@ function applyTheme(theme: ColorTheme) {
   for (const [key, value] of Object.entries(theme.vars)) {
     root.style.setProperty(key, value)
   }
-  applyCursorTheme(theme, root)
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {

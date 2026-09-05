@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import Header from './Header'
 import Footer from './Footer'
 import CatCompanion from './CatCompanion'
+import CustomCursor from './CustomCursor'
 
 export default function Layout() {
   return (
@@ -12,6 +13,7 @@ export default function Layout() {
       </main>
       <Footer />
       <CatCompanion />
+      <CustomCursor />
     </div>
   )
 }
