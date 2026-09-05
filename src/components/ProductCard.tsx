@@ -3,9 +3,11 @@ import { ShoppingBag, Sparkles } from 'lucide-react'
 import type { Product } from '../types'
 import { formatMMK } from '../lib/format'
 import { useCart } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function ProductCard({ product }: { product: Product }) {
   const { addItem } = useCart()
+  const { t } = useLanguage()
   const hasDiscount = product.compare_at_price_mmk && product.compare_at_price_mmk > product.price_mmk
 
   return (
@@ -24,12 +26,12 @@ export default function ProductCard({ product }: { product: Product }) {
         )}
         {product.is_featured && (
           <span className="absolute left-3 top-3 rounded-full bg-brand-500 px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
-            Bestseller
+            {t('common.bestseller')}
           </span>
         )}
         {hasDiscount && (
           <span className="absolute right-3 top-3 rounded-full bg-cocoa px-2.5 py-1 text-[11px] font-bold text-white shadow-sm">
-            Sale
+            {t('common.sale')}
           </span>
         )}
       </Link>
@@ -56,7 +58,7 @@ export default function ProductCard({ product }: { product: Product }) {
           className="btn-primary mt-3 w-full py-2 text-sm"
         >
           <ShoppingBag className="h-4 w-4" />
-          {product.stock <= 0 ? 'Out of stock' : 'Add to Cart'}
+          {product.stock <= 0 ? t('common.outOfStock') : t('common.addToCart')}
         </button>
       </div>
     </div>

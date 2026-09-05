@@ -3,12 +3,14 @@ import { Link } from 'react-router-dom'
 import { CheckCircle2 } from 'lucide-react'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import { supabase } from '../lib/supabase'
 import { formatMMK } from '../lib/format'
 
 export default function Checkout() {
   const { items, subtotal, clear } = useCart()
   const { user, profile } = useAuth()
+  const { t } = useLanguage()
 
   const [name, setName] = useState(profile?.full_name ?? '')
   const [phone, setPhone] = useState(profile?.phone ?? '')
@@ -21,8 +23,8 @@ export default function Checkout() {
   if (items.length === 0 && !orderPlaced) {
     return (
       <div className="container-page py-20 text-center">
-        <p className="text-cocoa-light">Your cart is empty.</p>
-        <Link to="/shop" className="btn-primary mt-6 inline-flex">Browse the Shop</Link>
+        <p className="text-cocoa-light">{t('checkout.emptyCart')}</p>
+        <Link to="/shop" className="btn-primary mt-6 inline-flex">{t('cart.browseShop')}</Link>
       </div>
     )
   }
@@ -30,9 +32,9 @@ export default function Checkout() {
   if (!user) {
     return (
       <div className="container-page py-20 text-center">
-        <p className="text-cocoa-light">Please sign in to place an order.</p>
+        <p className="text-cocoa-light">{t('checkout.pleaseSignIn')}</p>
         <Link to="/login" state={{ from: { pathname: '/checkout' } }} className="btn-primary mt-6 inline-flex">
-          Sign In
+          {t('checkout.signIn')}
         </Link>
       </div>
     )
@@ -42,12 +44,9 @@ export default function Checkout() {
     return (
       <div className="container-page py-20 text-center">
         <CheckCircle2 className="mx-auto h-14 w-14 text-brand-500" />
-        <h1 className="mt-4 font-display text-2xl font-bold text-cocoa">Thank you for your order! 🎀</h1>
-        <p className="mt-2 text-cocoa-light">
-          We'll reach out at {phone} to confirm delivery details. Meow's Paws are on their way once your order is
-          confirmed.
-        </p>
-        <Link to="/account" className="btn-primary mt-6 inline-flex">View My Orders</Link>
+        <h1 className="mt-4 font-display text-2xl font-bold text-cocoa">{t('checkout.thankYou')}</h1>
+        <p className="mt-2 text-cocoa-light">{t('checkout.thankYouDesc', { phone })}</p>
+        <Link to="/account" className="btn-primary mt-6 inline-flex">{t('checkout.viewOrders')}</Link>
       </div>
     )
   }
@@ -57,7 +56,7 @@ export default function Checkout() {
     setError(null)
 
     if (!name || !phone || !address) {
-      setError('Please fill in your name, phone, and delivery address.')
+      setError(t('checkout.fillRequired'))
       return
     }
 
@@ -94,7 +93,7 @@ export default function Checkout() {
       clear()
       setOrderPlaced(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong placing your order.')
+      setError(err instanceof Error ? err.message : t('checkout.genericError'))
     } finally {
       setSubmitting(false)
     }
@@ -102,36 +101,36 @@ export default function Checkout() {
 
   return (
     <div className="container-page py-12">
-      <h1 className="font-display text-3xl font-extrabold text-cocoa">Checkout</h1>
+      <h1 className="font-display text-3xl font-extrabold text-cocoa">{t('checkout.heading')}</h1>
 
       <div className="mt-8 grid gap-10 lg:grid-cols-3">
         <form onSubmit={handleSubmit} className="card space-y-4 p-6 lg:col-span-2">
           <div>
-            <label className="label">Full Name *</label>
+            <label className="label">{t('checkout.fullName')}</label>
             <input value={name} onChange={(e) => setName(e.target.value)} className="input" required />
           </div>
           <div>
-            <label className="label">Phone Number *</label>
+            <label className="label">{t('checkout.phone')}</label>
             <input value={phone} onChange={(e) => setPhone(e.target.value)} className="input" required />
           </div>
           <div>
-            <label className="label">Delivery Address *</label>
+            <label className="label">{t('checkout.address')}</label>
             <textarea value={address} onChange={(e) => setAddress(e.target.value)} className="input min-h-24" required />
           </div>
           <div>
-            <label className="label">Order Notes (optional)</label>
+            <label className="label">{t('checkout.notes')}</label>
             <textarea value={notes} onChange={(e) => setNotes(e.target.value)} className="input min-h-20" />
           </div>
 
           {error && <p className="text-sm font-semibold text-red-500">{error}</p>}
 
           <button type="submit" disabled={submitting} className="btn-primary w-full">
-            {submitting ? 'Placing Order...' : 'Place Order'}
+            {submitting ? t('checkout.placingOrder') : t('checkout.placeOrder')}
           </button>
         </form>
 
         <div className="card h-fit p-6">
-          <h2 className="font-display text-lg font-bold text-cocoa">Order Summary</h2>
+          <h2 className="font-display text-lg font-bold text-cocoa">{t('checkout.orderSummary')}</h2>
           <ul className="mt-4 space-y-2 text-sm">
             {items.map(({ product, quantity }) => (
               <li key={product.id} className="flex justify-between text-cocoa-light">
@@ -141,7 +140,7 @@ export default function Checkout() {
             ))}
           </ul>
           <div className="mt-4 flex justify-between border-t border-cocoa/10 pt-4 font-bold text-cocoa">
-            <span>Total</span>
+            <span>{t('checkout.total')}</span>
             <span>{formatMMK(subtotal)}</span>
           </div>
         </div>

@@ -5,6 +5,7 @@ import { supabase } from '../lib/supabase'
 import type { Product } from '../types'
 import { formatMMK } from '../lib/format'
 import { useCart } from '../context/CartContext'
+import { useLanguage } from '../context/LanguageContext'
 import PawSpinner from '../components/PawSpinner'
 
 export default function ProductDetail() {
@@ -13,6 +14,7 @@ export default function ProductDetail() {
   const [loading, setLoading] = useState(true)
   const [quantity, setQuantity] = useState(1)
   const { addItem } = useCart()
+  const { t } = useLanguage()
 
   useEffect(() => {
     let active = true
@@ -29,13 +31,13 @@ export default function ProductDetail() {
     }
   }, [slug])
 
-  if (loading) return <PawSpinner label="Loading product..." />
+  if (loading) return <PawSpinner label={t('product.loading')} />
 
   if (!product) {
     return (
       <div className="container-page py-20 text-center">
-        <p className="text-cocoa-light">We couldn't find that product.</p>
-        <Link to="/shop" className="btn-secondary mt-6 inline-flex">Back to Shop</Link>
+        <p className="text-cocoa-light">{t('product.notFound')}</p>
+        <Link to="/shop" className="btn-secondary mt-6 inline-flex">{t('common.backToShop')}</Link>
       </div>
     )
   }
@@ -45,7 +47,7 @@ export default function ProductDetail() {
   return (
     <div className="container-page py-12">
       <Link to="/shop" className="inline-flex items-center gap-1 text-sm font-semibold text-cocoa-light hover:text-brand-600">
-        <ChevronLeft className="h-4 w-4" /> Back to Shop
+        <ChevronLeft className="h-4 w-4" /> {t('common.backToShop')}
       </Link>
 
       <div className="mt-6 grid gap-10 lg:grid-cols-2">
@@ -75,7 +77,7 @@ export default function ProductDetail() {
           <p className="mt-5 leading-relaxed text-cocoa-light">{product.description}</p>
 
           <p className="mt-4 text-sm font-semibold text-cocoa-light">
-            {product.stock > 0 ? `${product.stock} in stock` : 'Out of stock'}
+            {product.stock > 0 ? t('common.inStock', { n: product.stock }) : t('common.outOfStock')}
           </p>
 
           <div className="mt-6 flex items-center gap-4">
@@ -100,7 +102,7 @@ export default function ProductDetail() {
               disabled={product.stock <= 0}
               className="btn-primary flex-1"
             >
-              <ShoppingBag className="h-4 w-4" /> Add to Cart
+              <ShoppingBag className="h-4 w-4" /> {t('product.addToCart')}
             </button>
           </div>
         </div>

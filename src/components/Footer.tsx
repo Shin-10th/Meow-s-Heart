@@ -1,7 +1,9 @@
 import { Link } from 'react-router-dom'
 import { Heart, Camera, Users, Send } from 'lucide-react'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Footer() {
+  const { t } = useLanguage()
   return (
     <footer className="mt-20 border-t border-cocoa/10 bg-white">
       <div className="container-page grid gap-10 py-12 sm:grid-cols-2 lg:grid-cols-4">
@@ -12,9 +14,7 @@ export default function Footer() {
             </span>
             <span className="font-display text-base font-bold text-cocoa">Meow's Heart</span>
           </div>
-          <p className="mt-3 text-sm leading-relaxed text-cocoa-light">
-            Trendy, authentic, and affordable beauty solutions from Korea, Thailand, and China. 🐾🎀
-          </p>
+          <p className="mt-3 text-sm leading-relaxed text-cocoa-light">{t('footer.tagline')}</p>
           <div className="mt-4 flex gap-3">
             <a href="#" aria-label="Facebook" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
               <Users className="h-4 w-4" />
@@ -29,24 +29,24 @@ export default function Footer() {
         </div>
 
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">Shop</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">{t('footer.shop')}</h3>
           <ul className="mt-3 space-y-2 text-sm text-cocoa-light">
-            <li><Link to="/shop" className="hover:text-brand-600">All Products</Link></li>
-            <li><Link to="/loyalty" className="hover:text-brand-600">Meow's Paws</Link></li>
-            <li><Link to="/consultations" className="hover:text-brand-600">Consultations</Link></li>
+            <li><Link to="/shop" className="hover:text-brand-600">{t('footer.allProducts')}</Link></li>
+            <li><Link to="/loyalty" className="hover:text-brand-600">{t('nav.loyalty')}</Link></li>
+            <li><Link to="/consultations" className="hover:text-brand-600">{t('nav.consultations')}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">Company</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">{t('footer.company')}</h3>
           <ul className="mt-3 space-y-2 text-sm text-cocoa-light">
-            <li><Link to="/about" className="hover:text-brand-600">About Us</Link></li>
-            <li><Link to="/contact" className="hover:text-brand-600">Contact</Link></li>
+            <li><Link to="/about" className="hover:text-brand-600">{t('footer.aboutUs')}</Link></li>
+            <li><Link to="/contact" className="hover:text-brand-600">{t('nav.contact')}</Link></li>
           </ul>
         </div>
 
         <div>
-          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">Get in touch</h3>
+          <h3 className="text-sm font-bold uppercase tracking-wide text-cocoa">{t('footer.getInTouch')}</h3>
           <ul className="mt-3 space-y-2 text-sm text-cocoa-light">
             <li>+95 9 759053900</li>
             <li>meow.heart085@gmail.com</li>
@@ -55,7 +55,7 @@ export default function Footer() {
         </div>
       </div>
       <div className="border-t border-cocoa/10 py-4 text-center text-xs text-cocoa-light">
-        © {new Date().getFullYear()} Meow's Heart. Made with 💗 for beautiful hearts everywhere.
+        © {new Date().getFullYear()} Meow's Heart. {t('footer.copyright')}
       </div>
     </footer>
   )

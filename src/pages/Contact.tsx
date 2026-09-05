@@ -1,8 +1,10 @@
 import { useState, type FormEvent } from 'react'
 import { Phone, Mail, MapPin, Clock, Camera, Users, Send } from 'lucide-react'
 import { supabase, isSupabaseConfigured } from '../lib/supabase'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Contact() {
+  const { t } = useLanguage()
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [subject, setSubject] = useState('')
@@ -33,47 +35,44 @@ export default function Contact() {
   return (
     <div className="container-page py-16">
       <div className="mx-auto max-w-2xl text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">Get in Touch with Meow's Heart</h1>
-        <p className="mt-3 text-cocoa-light">
-          We'd love to hear from you! Whether you have questions about our products, need beauty advice, or want
-          to share feedback, we're here to help.
-        </p>
+        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('contact.heading')}</h1>
+        <p className="mt-3 text-cocoa-light">{t('contact.subtitle')}</p>
       </div>
 
       <div className="mt-12 grid gap-10 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <div className="card space-y-6 p-6">
-            <h2 className="font-display text-lg font-bold text-cocoa">Contact Information</h2>
+            <h2 className="font-display text-lg font-bold text-cocoa">{t('contact.infoHeading')}</h2>
             <div className="flex gap-3">
               <Phone className="h-5 w-5 shrink-0 text-brand-500" />
               <div>
                 <p className="font-semibold text-cocoa">+95 9 759053900</p>
-                <p className="text-sm text-cocoa-light">Available 9 AM – 8 PM daily</p>
+                <p className="text-sm text-cocoa-light">{t('contact.phoneNote')}</p>
               </div>
             </div>
             <div className="flex gap-3">
               <Mail className="h-5 w-5 shrink-0 text-brand-500" />
               <div>
                 <p className="font-semibold text-cocoa">meow.heart085@gmail.com</p>
-                <p className="text-sm text-cocoa-light">We'll respond within 24 hours</p>
+                <p className="text-sm text-cocoa-light">{t('contact.emailNote')}</p>
               </div>
             </div>
             <div className="flex gap-3">
               <MapPin className="h-5 w-5 shrink-0 text-brand-500" />
               <div>
                 <p className="font-semibold text-cocoa">Yangon, Myanmar</p>
-                <p className="text-sm text-cocoa-light">Serving nationwide</p>
+                <p className="text-sm text-cocoa-light">{t('contact.locationNote')}</p>
               </div>
             </div>
             <div className="flex gap-3">
               <Clock className="h-5 w-5 shrink-0 text-brand-500" />
               <div>
-                <p className="font-semibold text-cocoa">Monday – Sunday</p>
-                <p className="text-sm text-cocoa-light">9:00 AM – 8:00 PM</p>
+                <p className="font-semibold text-cocoa">{t('contact.hoursValue')}</p>
+                <p className="text-sm text-cocoa-light">{t('contact.hoursNote')}</p>
               </div>
             </div>
             <div>
-              <p className="mb-2 text-sm font-semibold text-cocoa">Follow Us</p>
+              <p className="mb-2 text-sm font-semibold text-cocoa">{t('contact.followUs')}</p>
               <div className="flex gap-3">
                 <a href="#" aria-label="Facebook" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100"><Users className="h-4 w-4" /></a>
                 <a href="#" aria-label="Instagram" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 hover:bg-brand-100"><Camera className="h-4 w-4" /></a>
@@ -85,37 +84,35 @@ export default function Contact() {
 
         <div className="lg:col-span-3">
           <form onSubmit={handleSubmit} className="card space-y-4 p-6">
-            <h2 className="font-display text-lg font-bold text-cocoa">Send us a Message</h2>
+            <h2 className="font-display text-lg font-bold text-cocoa">{t('contact.formHeading')}</h2>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
-                <label className="label">Name *</label>
+                <label className="label">{t('contact.name')}</label>
                 <input value={name} onChange={(e) => setName(e.target.value)} className="input" required />
               </div>
               <div>
-                <label className="label">Email *</label>
+                <label className="label">{t('contact.email')}</label>
                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} className="input" required />
               </div>
             </div>
             <div>
-              <label className="label">Subject *</label>
+              <label className="label">{t('contact.subject')}</label>
               <input value={subject} onChange={(e) => setSubject(e.target.value)} className="input" required />
             </div>
             <div>
-              <label className="label">Message *</label>
+              <label className="label">{t('contact.message')}</label>
               <textarea value={message} onChange={(e) => setMessage(e.target.value)} className="input min-h-32" required />
             </div>
 
-            {status === 'sent' && <p className="text-sm font-semibold text-green-600">Message sent — thank you! We'll be in touch soon.</p>}
+            {status === 'sent' && <p className="text-sm font-semibold text-green-600">{t('contact.sent')}</p>}
             {status === 'error' && (
               <p className="text-sm font-semibold text-red-500">
-                {isSupabaseConfigured
-                  ? "Something went wrong sending your message. Please try again."
-                  : 'Contact form needs Supabase connected — see supabase/SETUP.md.'}
+                {isSupabaseConfigured ? t('contact.error') : t('contact.needsSupabase')}
               </p>
             )}
 
             <button type="submit" disabled={submitting} className="btn-primary w-full">
-              {submitting ? 'Sending...' : 'Send Message'}
+              {submitting ? t('contact.sending') : t('contact.send')}
             </button>
           </form>
         </div>

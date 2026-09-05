@@ -1,30 +1,18 @@
 import { Camera, Users, Send } from 'lucide-react'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function About() {
+  const { t } = useLanguage()
   return (
     <div className="container-page py-16">
       <div className="mx-auto max-w-3xl text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">🌸 About Us – Meow's Heart 🌸</h1>
+        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('about.heading')}</h1>
 
         <div className="mt-8 space-y-5 text-left leading-relaxed text-cocoa-light">
-          <p>
-            Meow's Heart was born in 2022 with a simple dream. Our owner has always been in love with skincare
-            and color cosmetics. She believes that makeup and self-care are not just about looking pretty, but
-            about feeling confident and happy in your own skin.
-          </p>
-          <p>
-            At Meow's Heart, we truly believe there is no woman who is not beautiful. Every girl deserves to
-            glow, to shine, and to love herself a little more each day. That's why we bring trendy, authentic,
-            and affordable beauty products to help you take care of yourself with joy.
-          </p>
-          <p>
-            "Meow's Heart" is more than just a name — it is the owner's heart. Every customer is like a
-            precious and delicate heart to us, and we value you with the same care and love. 🎀💗
-          </p>
-          <p>
-            Here, beauty is not only in the products, but also in the way we share smiles, confidence, and
-            kindness together.
-          </p>
+          <p>{t('about.p1')}</p>
+          <p>{t('about.p2')}</p>
+          <p>{t('about.p3')}</p>
+          <p>{t('about.p4')}</p>
         </div>
 
         <div className="mt-10 flex justify-center gap-4">

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { PawPrint, LogOut, Package } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
+import { useLanguage } from '../context/LanguageContext'
 import { supabase } from '../lib/supabase'
 import type { Order } from '../types'
 import { formatMMK } from '../lib/format'
@@ -16,6 +17,7 @@ const statusColors: Record<string, string> = {
 
 export default function Account() {
   const { user, profile, signOut } = useAuth()
+  const { t } = useLanguage()
   const [orders, setOrders] = useState<Order[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -44,12 +46,12 @@ export default function Account() {
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
           <h1 className="font-display text-3xl font-extrabold text-cocoa">
-            Hi{profile?.full_name ? `, ${profile.full_name}` : ''} 👋
+            {t('account.hi')}{profile?.full_name ? `, ${profile.full_name}` : ''} 👋
           </h1>
           <p className="mt-1 text-cocoa-light">{user?.email}</p>
         </div>
         <button onClick={() => signOut()} className="btn-secondary">
-          <LogOut className="h-4 w-4" /> Sign Out
+          <LogOut className="h-4 w-4" /> {t('account.signOut')}
         </button>
       </div>
 
@@ -59,7 +61,7 @@ export default function Account() {
             <PawPrint className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm text-cocoa-light">Meow's Paws</p>
+            <p className="text-sm text-cocoa-light">{t('account.paws')}</p>
             <p className="font-display text-2xl font-extrabold text-cocoa">{profile?.loyalty_points ?? 0}</p>
           </div>
         </div>
@@ -68,25 +70,25 @@ export default function Account() {
             <Package className="h-6 w-6" />
           </div>
           <div>
-            <p className="text-sm text-cocoa-light">Orders placed</p>
+            <p className="text-sm text-cocoa-light">{t('account.ordersPlaced')}</p>
             <p className="font-display text-2xl font-extrabold text-cocoa">{orders.length}</p>
           </div>
         </div>
       </div>
 
       <div className="mt-10">
-        <h2 className="font-display text-xl font-bold text-cocoa">Order History</h2>
+        <h2 className="font-display text-xl font-bold text-cocoa">{t('account.orderHistory')}</h2>
         {loading ? (
-          <PawSpinner label="Loading your orders..." />
+          <PawSpinner label={t('account.loadingOrders')} />
         ) : orders.length === 0 ? (
-          <p className="mt-4 text-cocoa-light">You haven't placed any orders yet.</p>
+          <p className="mt-4 text-cocoa-light">{t('account.noOrders')}</p>
         ) : (
           <div className="mt-4 space-y-4">
             {orders.map((order) => (
               <div key={order.id} className="card p-5">
                 <div className="flex flex-wrap items-center justify-between gap-2">
                   <p className="text-sm font-semibold text-cocoa">
-                    Order #{order.id.slice(0, 8)} · {new Date(order.created_at).toLocaleDateString()}
+                    {t('account.order')} #{order.id.slice(0, 8)} · {new Date(order.created_at).toLocaleDateString()}
                   </p>
                   <span className={`rounded-full px-3 py-1 text-xs font-bold capitalize ${statusColors[order.status]}`}>
                     {order.status}
@@ -101,7 +103,7 @@ export default function Account() {
                   ))}
                 </ul>
                 <div className="mt-3 flex justify-between border-t border-cocoa/10 pt-3 text-sm font-bold text-cocoa">
-                  <span>Total</span>
+                  <span>{t('account.total')}</span>
                   <span>{formatMMK(order.total_mmk)}</span>
                 </div>
               </div>

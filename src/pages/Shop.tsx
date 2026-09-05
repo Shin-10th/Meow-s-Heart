@@ -4,6 +4,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase'
 import type { Category, Product } from '../types'
 import ProductCard from '../components/ProductCard'
 import PawSpinner from '../components/PawSpinner'
+import { useLanguage } from '../context/LanguageContext'
 
 export default function Shop() {
   const [products, setProducts] = useState<Product[]>([])
@@ -11,6 +12,7 @@ export default function Shop() {
   const [activeCategory, setActiveCategory] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [loading, setLoading] = useState(true)
+  const { t } = useLanguage()
 
   useEffect(() => {
     let active = true
@@ -46,14 +48,13 @@ export default function Shop() {
   return (
     <div className="container-page py-12">
       <div className="text-center">
-        <h1 className="font-display text-4xl font-extrabold text-cocoa">Shop All Products</h1>
-        <p className="mt-2 text-cocoa-light">Authentic beauty picks from Korea, Thailand &amp; China</p>
+        <h1 className="font-display text-4xl font-extrabold text-cocoa">{t('shop.heading')}</h1>
+        <p className="mt-2 text-cocoa-light">{t('shop.subtitle')}</p>
       </div>
 
       {!isSupabaseConfigured ? (
         <div className="card mx-auto mt-10 max-w-xl p-8 text-center text-sm text-cocoa-light">
-          Connect Supabase (see <code className="rounded bg-brand-50 px-1.5 py-0.5">supabase/SETUP.md</code>) to load real
-          products here.
+          {t('common.connectSupabase')}
         </div>
       ) : (
         <>
@@ -65,7 +66,7 @@ export default function Shop() {
                   activeCategory === null ? 'bg-brand-500 text-white' : 'bg-white text-cocoa ring-1 ring-cocoa/10'
                 }`}
               >
-                All
+                {t('shop.all')}
               </button>
               {categories.map((c) => (
                 <button
@@ -85,7 +86,7 @@ export default function Shop() {
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search products..."
+                placeholder={t('shop.searchPlaceholder')}
                 className="input pl-9"
               />
             </div>
@@ -93,9 +94,9 @@ export default function Shop() {
 
           <div className="mt-8">
             {loading ? (
-              <PawSpinner label="Loading products..." />
+              <PawSpinner label={t('shop.loading')} />
             ) : filtered.length === 0 ? (
-              <p className="py-16 text-center text-cocoa-light">No products match your search.</p>
+              <p className="py-16 text-center text-cocoa-light">{t('shop.noMatch')}</p>
             ) : (
               <div className="grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-4">
                 {filtered.map((p) => (
