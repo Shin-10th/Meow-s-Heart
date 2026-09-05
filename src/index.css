@@ -1,26 +1,29 @@
 @import "tailwindcss";
 
 @theme {
-  /* Muted, premium rose palette (was a brighter magenta-pink) */
-  --color-brand-50: #fdf4f3;
-  --color-brand-100: #fbe7e5;
-  --color-brand-200: #f4cdc9;
-  --color-brand-300: #e9aaa5;
-  --color-brand-400: #db8781;
-  --color-brand-500: #c76d68;
-  --color-brand-600: #ad5450;
-  --color-brand-700: #8c4441;
-  --color-brand-800: #703937;
-  --color-brand-900: #5c302f;
+  /* Default color values below match the "Classic Pink" preset in
+     src/themes.ts (kept in sync manually - also duplicated in the
+     no-flash inline script in index.html). The ThemeProvider overrides
+     these CSS variables at runtime based on the visitor's chosen
+     theme, so these are just the first-paint / fallback values. */
+  --color-brand-50: #fff0f6;
+  --color-brand-100: #ffe0ee;
+  --color-brand-200: #ffc2de;
+  --color-brand-300: #ff96c4;
+  --color-brand-400: #ff5fa3;
+  --color-brand-500: #f9418a;
+  --color-brand-600: #e02270;
+  --color-brand-700: #b8175a;
+  --color-brand-800: #93154a;
+  --color-brand-900: #7a153f;
 
-  --color-cream: #fdf9f6;
-  --color-cream-dark: #f6ece5;
-  --color-cocoa: #453a36;
-  --color-cocoa-light: #8c7c74;
+  --color-cream: #fff8fa;
+  --color-cream-dark: #ffeaf2;
+  --color-cocoa: #5b3a29;
+  --color-cocoa-light: #8a6a55;
 
-  /* Champagne/gold accent for a premium touch */
-  --color-gold: #c6a15b;
-  --color-gold-light: #e8dcc0;
+  --color-gold: #f9418a;
+  --color-gold-light: #ffc2de;
 
   --font-display: "Fraunces", "Georgia", serif;
   --font-body: "Work Sans", system-ui, sans-serif;

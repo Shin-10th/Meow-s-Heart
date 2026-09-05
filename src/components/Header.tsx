@@ -5,6 +5,7 @@ import Logo from './Logo'
 import { useCart } from '../context/CartContext'
 import { useAuth } from '../context/AuthContext'
 import { useLanguage } from '../context/LanguageContext'
+import ThemeSwitcher from './ThemeSwitcher'
 
 export default function Header() {
   const [open, setOpen] = useState(false)
@@ -55,6 +56,9 @@ export default function Header() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <div className="hidden sm:block">
+            <ThemeSwitcher />
+          </div>
           <button
             onClick={toggleLanguage}
             className="hidden items-center gap-1 rounded-full border border-cocoa/10 bg-transparent px-3 py-1.5 text-xs font-medium text-cocoa/70 transition hover:border-brand-300 hover:text-brand-600 sm:flex"
@@ -137,6 +141,9 @@ export default function Header() {
               <Languages className="h-4 w-4" />
               {language === 'en' ? t('lang.burmese') : t('lang.english')}
             </button>
+            <div className="mt-1 px-3 py-2">
+              <ThemeSwitcher />
+            </div>
           </div>
         </nav>
       )}

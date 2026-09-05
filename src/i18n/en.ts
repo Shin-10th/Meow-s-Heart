@@ -252,6 +252,9 @@ const en = {
   'notFound.desc': 'This page must have wandered off chasing a laser pointer.',
   'notFound.backHome': 'Back to Home',
 
+  // Color theme picker
+  'theme.label': 'Color theme',
+
   // Language toggle
   'lang.english': 'English',
   'lang.burmese': 'မြန်မာ',

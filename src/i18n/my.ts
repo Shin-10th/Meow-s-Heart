@@ -254,6 +254,9 @@ const my = {
   'notFound.desc': 'ဤစာမျက်နှာသည် လေဆာအလင်းရောင်ကို လိုက်ကစားရင်း လမ်းမှားသွားပုံရပါသည်။',
   'notFound.backHome': 'ပင်မစာမျက်နှာသို့ ပြန်သွားရန်',
 
+  // Color theme picker
+  'theme.label': 'အရောင်ရွေးချယ်ရန်',
+
   // Language toggle
   'lang.english': 'English',
   'lang.burmese': 'မြန်မာ',
