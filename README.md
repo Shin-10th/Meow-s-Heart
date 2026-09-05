@@ -43,3 +43,25 @@ cp .env.example .env
 
 Visit `/admin` after making your account an admin (see step 5 in `supabase/SETUP.md`). From there you
 can manage products, view/update orders, view consultation bookings, and read contact messages.
+
+## Working with git branches
+
+This project is a git repo with two branches:
+
+- `main` — the safe, working version (what's described above).
+- `pixelmeow-design` — an identical copy of `main`, reserved for trying out a riskier visual
+  redesign without touching the working site.
+
+To switch between them (from a terminal in this folder):
+
+```bash
+git checkout main              # back to the safe, current design
+git checkout pixelmeow-design  # the experimental design branch
+```
+
+Whichever branch you have checked out is what `npm run dev` shows. Nothing you do on one branch
+affects the other — if a design experiment goes badly, just `git checkout main` and it's like it
+never happened. Once you're happy with a design branch, ask to have it merged into `main`.
+
+New feature work (like the language toggle) lands on `main` first so both branches start from the
+same up-to-date baseline; `pixelmeow-design` is only for the visual redesign itself.
