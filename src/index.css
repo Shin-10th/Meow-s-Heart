@@ -148,11 +148,11 @@
   }
   .custom-cursor-zzz {
     position: absolute;
-    left: 22px;
+    left: 24px;
     top: -8px;
     font-family: var(--font-display);
     font-weight: 700;
-    color: var(--color-brand-500);
+    color: var(--color-cocoa);
     opacity: 0;
   }
   .custom-cursor-zzz--1 {

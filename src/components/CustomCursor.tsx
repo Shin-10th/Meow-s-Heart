@@ -75,20 +75,31 @@ export default function CustomCursor() {
 
   return (
     <div ref={wrapperRef} className={`custom-cursor${show ? ' is-visible' : ''}${idle ? ' is-idle' : ''}`} aria-hidden="true">
-      <svg className="custom-cursor-paw" viewBox="0 0 34 32" xmlns="http://www.w3.org/2000/svg">
+      <svg className="custom-cursor-paw" viewBox="0 0 36 33" xmlns="http://www.w3.org/2000/svg">
+        {/* Heart accent, upper-left — the outline is the theme's dark
+            "cocoa" shade (not white), so it actually reads against a
+            light page background instead of disappearing into it. */}
         <path
           fill="var(--color-brand-300)"
-          stroke="#ffffff"
-          strokeWidth="0.8"
-          d="M6.5 2.3c-1.1-1.3-3.3-.9-3.3.9 0 1.7 1.9 3.1 3.3 4.3 1.4-1.2 3.3-2.6 3.3-4.3 0-1.8-2.2-2.2-3.3-.9z"
+          stroke="var(--color-cocoa)"
+          strokeWidth="1.3"
+          strokeLinejoin="round"
+          d="M6.8 2.4c-1.3-1.5-3.8-1-3.8 1 0 2 2.2 3.6 3.8 5 1.6-1.4 3.8-3 3.8-5 0-2-2.5-2.5-3.8-1z"
         />
-        <g fill="var(--color-brand-400)" stroke="#ffffff" strokeWidth="1.1">
-          <ellipse cx="23.5" cy="24" rx="7.4" ry="6.4" />
-          <circle cx="12" cy="13" r="3.1" />
-          <circle cx="17.3" cy="10.6" r="3.5" />
-          <circle cx="22.7" cy="11.4" r="3.5" />
-          <circle cx="27.5" cy="15" r="3.1" />
+        <circle cx="5.3" cy="4.3" r="0.55" fill="#ffffff" opacity="0.85" />
+
+        {/* Paw: heel pad + four toe pads, each outlined so it reads as
+            distinct pads (like a real paw print) rather than a fused
+            blob. */}
+        <g fill="var(--color-brand-300)" stroke="var(--color-cocoa)" strokeWidth="1.5" strokeLinejoin="round">
+          <ellipse cx="19" cy="23" rx="8.4" ry="7.8" />
+          <circle cx="8.5" cy="18" r="3.5" />
+          <circle cx="14.6" cy="11.6" r="4.2" />
+          <circle cx="23.4" cy="11.6" r="4.2" />
+          <circle cx="29.5" cy="18" r="3.5" />
         </g>
+        {/* Small glossy highlight on the heel pad. */}
+        <ellipse cx="16" cy="20" rx="2.3" ry="1.6" fill="#ffffff" opacity="0.45" />
       </svg>
       <span className="custom-cursor-zzz custom-cursor-zzz--1">z</span>
       <span className="custom-cursor-zzz custom-cursor-zzz--2">Z</span>
