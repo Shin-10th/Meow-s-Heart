@@ -9,6 +9,7 @@ export default function Register() {
   const { t } = useLanguage()
   const navigate = useNavigate()
   const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -19,7 +20,7 @@ export default function Register() {
     e.preventDefault()
     setSubmitting(true)
     setError(null)
-    const { error } = await signUp(email, password, fullName)
+    const { error } = await signUp(email, password, fullName, phone)
     setSubmitting(false)
     if (error) {
       setError(error)
@@ -54,6 +55,18 @@ export default function Register() {
           <div>
             <label className="label">{t('register.fullName')}</label>
             <input value={fullName} onChange={(e) => setFullName(e.target.value)} className="input" required />
+          </div>
+          <div>
+            <label className="label">{t('register.phone')}</label>
+            <input
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="09xxxxxxxxx"
+              className="input"
+              required
+            />
+            <p className="mt-1 text-xs text-cocoa-light">{t('register.phoneNote')}</p>
           </div>
           <div>
             <label className="label">{t('register.email')}</label>

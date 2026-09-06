@@ -1,5 +1,5 @@
 import { NavLink, Outlet } from 'react-router-dom'
-import { LayoutDashboard, Package, ShoppingCart, CalendarCheck, Mail } from 'lucide-react'
+import { LayoutDashboard, Package, ShoppingCart, CalendarCheck, Mail, MessageCircle } from 'lucide-react'
 
 const links = [
   { to: '/admin', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -7,6 +7,7 @@ const links = [
   { to: '/admin/orders', label: 'Orders', icon: ShoppingCart },
   { to: '/admin/bookings', label: 'Bookings', icon: CalendarCheck },
   { to: '/admin/messages', label: 'Messages', icon: Mail },
+  { to: '/admin/support', label: 'Support Chat', icon: MessageCircle },
 ]
 
 export default function AdminLayout() {

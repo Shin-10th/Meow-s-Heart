@@ -24,6 +24,7 @@ import AdminProductForm from './pages/admin/AdminProductForm'
 import AdminOrders from './pages/admin/AdminOrders'
 import AdminBookings from './pages/admin/AdminBookings'
 import AdminMessages from './pages/admin/AdminMessages'
+import AdminSupportInbox from './pages/admin/AdminSupportInbox'
 
 function App() {
   return (
@@ -73,6 +74,7 @@ function App() {
             <Route path="orders" element={<AdminOrders />} />
             <Route path="bookings" element={<AdminBookings />} />
             <Route path="messages" element={<AdminMessages />} />
+            <Route path="support" element={<AdminSupportInbox />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

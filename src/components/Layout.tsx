@@ -3,6 +3,7 @@ import Header from './Header'
 import Footer from './Footer'
 import CatCompanion from './CatCompanion'
 import CustomCursor from './CustomCursor'
+import SupportWidget from './SupportWidget'
 
 export default function Layout() {
   return (
@@ -14,6 +15,7 @@ export default function Layout() {
       <Footer />
       <CatCompanion />
       <CustomCursor />
+      <SupportWidget />
     </div>
   )
 }

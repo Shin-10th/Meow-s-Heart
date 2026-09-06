@@ -33,7 +33,9 @@ export interface Product {
   created_at: string
 }
 
-export type OrderStatus = 'pending' | 'paid' | 'shipped' | 'completed' | 'cancelled'
+export type OrderStatus = 'awaiting_confirmation' | 'processing' | 'shipped' | 'completed' | 'cancelled'
+
+export type PaymentMethod = 'kpay' | 'cod'
 
 export interface OrderItem {
   id: string
@@ -53,6 +55,9 @@ export interface Order {
   shipping_name: string
   shipping_phone: string
   shipping_address: string
+  delivery_city: string | null
+  payment_method: PaymentMethod | null
+  kpay_receipt_url: string | null
   notes: string | null
   created_at: string
   order_items?: OrderItem[]
@@ -103,4 +108,26 @@ export interface ContactMessage {
 export interface CartItem {
   product: Product
   quantity: number
+}
+
+export type SupportSender = 'customer' | 'ai' | 'admin'
+
+export interface SupportConversation {
+  id: string
+  user_id: string
+  status: 'open' | 'pending_admin' | 'closed'
+  priority: number
+  human_engaged: boolean
+  last_message_at: string
+  created_at: string
+  // joined client-side for the admin inbox, not a real column
+  profile?: Pick<Profile, 'full_name' | 'phone'> | null
+}
+
+export interface SupportMessage {
+  id: string
+  conversation_id: string
+  sender: SupportSender
+  body: string
+  created_at: string
 }
