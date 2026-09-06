@@ -26,13 +26,13 @@ export default function Header() {
       <div className="container-page flex h-16 items-center justify-between gap-4">
         <Logo />
 
-        <nav className="hidden items-center gap-6 lg:flex">
+        <nav className="hidden items-center gap-5 lg:flex xl:gap-6">
           {navLinks.map((link) => (
             <NavLink
               key={link.to}
               to={link.to}
               className={({ isActive }) =>
-                `text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
+                `shrink-0 whitespace-nowrap text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
                   isActive ? 'text-brand-600' : 'text-cocoa/70'
                 }`
               }
@@ -44,7 +44,7 @@ export default function Header() {
             <NavLink
               to="/admin"
               className={({ isActive }) =>
-                `text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
+                `shrink-0 whitespace-nowrap text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
                   isActive ? 'text-brand-600' : 'text-cocoa/70'
                 }`
               }
@@ -54,13 +54,13 @@ export default function Header() {
           )}
         </nav>
 
-        <div className="flex items-center gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
           <Link
             to="/loyalty"
-            className="hidden items-center gap-1 rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-600 sm:flex"
+            className="hidden shrink-0 items-center gap-1 whitespace-nowrap rounded-full bg-brand-50 px-3 py-1.5 text-xs font-medium text-brand-600 sm:flex"
             title="Meow's Paws loyalty points"
           >
-            <PawPrint className="h-3.5 w-3.5" />
+            <PawPrint className="h-3.5 w-3.5 shrink-0" />
             {user ? t('header.myPaws') : t('header.join')}
           </Link>
           <Link
