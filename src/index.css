@@ -6,24 +6,24 @@
      no-flash inline script in index.html). The ThemeProvider overrides
      these CSS variables at runtime based on the visitor's chosen
      theme, so these are just the first-paint / fallback values. */
-  --color-brand-50: #fff0f6;
-  --color-brand-100: #ffe0ee;
-  --color-brand-200: #ffc2de;
-  --color-brand-300: #ff96c4;
-  --color-brand-400: #ff5fa3;
-  --color-brand-500: #f9418a;
-  --color-brand-600: #e02270;
-  --color-brand-700: #b8175a;
-  --color-brand-800: #93154a;
-  --color-brand-900: #7a153f;
+  --color-brand-50: #fef8fa;
+  --color-brand-100: #fdf0f5;
+  --color-brand-200: #fadce8;
+  --color-brand-300: #f6bfd3;
+  --color-brand-400: #f19fb9;
+  --color-brand-500: #ea7ea4;
+  --color-brand-600: #de4f81;
+  --color-brand-700: #c72960;
+  --color-brand-800: #9b224c;
+  --color-brand-900: #781c3c;
 
-  --color-cream: #fff8fa;
-  --color-cream-dark: #ffeaf2;
+  --color-cream: #fef8fa;
+  --color-cream-dark: #fceef4;
   --color-cocoa: #5b3a29;
   --color-cocoa-light: #8a6a55;
 
-  --color-gold: #f9418a;
-  --color-gold-light: #ffc2de;
+  --color-gold: #ea7ea4;
+  --color-gold-light: #fadce8;
 
   --font-display: "Fraunces", "Georgia", serif;
   --font-body: "Work Sans", system-ui, sans-serif;
