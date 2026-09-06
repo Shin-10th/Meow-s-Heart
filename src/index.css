@@ -255,6 +255,13 @@
   .cat-companion[data-state="sleep"] .cat-companion-body {
     animation: cat-breathe 2.6s ease-in-out infinite;
   }
+  /* Idle variety: about a third of the time a sitting cat grooms
+     itself instead of just breathing (see the "grooming" ref in
+     CatCompanion.tsx) — a quick little head-dip/tuck loop, distinct
+     from the plain breathing animation. */
+  .cat-companion[data-grooming="true"] .cat-companion-body {
+    animation: cat-groom 1.8s ease-in-out infinite;
+  }
   @keyframes cat-walk-bob {
     0%, 100% { transform: translateY(0) rotate(0deg); }
     50% { transform: translateY(-3px) rotate(-3deg); }
@@ -262,6 +269,25 @@
   @keyframes cat-breathe {
     0%, 100% { transform: scale(1); }
     50% { transform: scale(1.045); }
+  }
+  @keyframes cat-groom {
+    0%, 100% { transform: rotate(0deg) scale(1); }
+    20% { transform: rotate(-6deg) scale(0.98, 1.02); }
+    45% { transform: rotate(4deg) scale(1.03, 0.97); }
+    70% { transform: rotate(-3deg) scale(0.99, 1.01); }
+  }
+  /* The "notice" reaction: a quick startled pulse when the cursor
+     detector senses the mouse has come close (see the notice effect
+     in CatCompanion.tsx). Applied to the hopper so it layers on top
+     of any jump animation already playing. */
+  .cat-companion-alert {
+    animation: cat-alert-pulse 0.42s ease-out;
+  }
+  @keyframes cat-alert-pulse {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.22, 0.85); }
+    65% { transform: scale(0.92, 1.1); }
+    100% { transform: scale(1); }
   }
   .cat-companion-zzz {
     position: absolute;

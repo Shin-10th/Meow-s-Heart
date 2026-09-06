@@ -2,15 +2,16 @@ import { useEffect, useRef, useState } from 'react'
 
 /**
  * A single roaming cat companion that explores the actual page layout
- * — walking the borders of cards, the header, and the footer, jumping
- * across the gaps between them, sometimes sitting on a corner, and
- * occasionally wandering the outer window edge too — rather than
- * following one fixed rectangular path around the screen.
+ * — walking the borders of cards, buttons, the header, and the
+ * footer, jumping across the gaps between them, sitting on a corner,
+ * or wandering the outer window edge — rather than following one
+ * fixed rectangular path around the screen.
  *
  * Loosely inspired by desktop "cat companion" pets
  * (https://sea-salt-crackers.itch.io/cat-companion) — this is an
  * original re-implementation for the web, not a copy of that game's
- * assets or code.
+ * assets or code (that game has no published license and is a
+ * Windows .exe, which couldn't run on a web page anyway).
  *
  * The cat is drawn as an inline SVG colored entirely with the site's
  * theme CSS variables (see src/themes.ts / ThemeContext), so it
@@ -19,19 +20,43 @@ import { useEffect, useRef, useState } from 'react'
  * Only one instance is meant to be mounted (in Layout.tsx), so it
  * shows up once per page rather than per product.
  *
- * --- How the movement works ---
+ * --- "AI": sense, then decide, then act ---
+ * Rather than a single timer picking a random next move, behavior is
+ * split into three passes each tick, closer to how a simple game-AI
+ * loop works:
+ *
+ *  1. SENSE — read the environment fresh each tick: where real
+ *     widgets currently are (`collectTargets`, the "widget detector"),
+ *     whether the cat's current edge is a "floor" it could plausibly
+ *     rest on (`isFloor` — a top/left/right edge is a wall or ceiling
+ *     in this model, not somewhere a cat naturally settles down), how
+ *     far away the nearest usable widget actually is in open space
+ *     (`pickNextTarget`'s distance check — the "gap detector", so it
+ *     won't try to leap across a gap wider than a cat reasonably
+ *     could), and where the visitor's mouse cursor is right now.
+ *  2. DECIDE — `decideNextState` turns those readings into the next
+ *     behavior: it will only choose to sit or nap when standing on a
+ *     floor, and a separate always-on check reacts to the cursor
+ *     coming close by (see the "notice" effect below) regardless of
+ *     the slower walk/rest cycle.
+ *  3. ACT — apply the decision: move along the current edge, hop
+ *     around a corner, leap to a different widget, settle in to rest,
+ *     or perk up and get moving again because something (the cursor)
+ *     was detected nearby.
+ *
+ * --- How the movement itself works ---
  * At any moment the cat has a "target" — either a real DOM element
- * (a `.card`, the `<header>`, the `<footer>`) or the viewport itself
- * — and a position `t` in [0, 400) measured around that target's own
- * perimeter (100 units per edge: top, right, bottom, left, clockwise).
- * Walking smoothly slides it along the current edge. Reaching a
- * corner of the SAME target rotates it onto the next edge (a small
- * hop). After walking a few edges of one target, instead of
- * continuing around it, the cat picks a different target (biased
- * toward ones nearby) and leaps to the closest corner of it — a
- * bigger hop, standing in for "jumping across the gap" between two
- * widgets. Rects are read live via getBoundingClientRect(), so the
- * cat stays glued to its target as the page scrolls or resizes.
+ * or the viewport itself — and a position `t` in [0, 400) measured
+ * around that target's own perimeter (100 units per edge: top,
+ * right, bottom, left, clockwise). Walking smoothly slides it along
+ * the current edge; reaching a corner of the same target rotates it
+ * onto the next edge (a small hop). After walking a few edges of one
+ * target, the cat leaps to a different one instead — biased toward
+ * whichever nearby widget is actually reachable (see the gap
+ * detector above), falling back to the open window edge when nothing
+ * suitable is close by. Rects are read live via
+ * getBoundingClientRect(), so the cat stays glued to its target as
+ * the page scrolls or resizes.
  */
 
 type Edge = 'top' | 'right' | 'bottom' | 'left'
@@ -39,6 +64,7 @@ type CatState = 'walk' | 'sit' | 'sleep'
 type Rect = { top: number; left: number; width: number; height: number }
 type Target = { key: string; el: HTMLElement | null }
 type JumpSize = 'small' | 'big'
+type Point = { x: number; y: number }
 
 const STATE_TIMING: Record<CatState, { minMs: number; maxMs: number }> = {
   walk: { minMs: 2600, maxMs: 5500 },
@@ -47,27 +73,42 @@ const STATE_TIMING: Record<CatState, { minMs: number; maxMs: number }> = {
 }
 
 const EDGE_ROTATION: Record<Edge, number> = { top: 180, right: -90, bottom: 0, left: 90 }
-// Widgets the cat is willing to explore — cards, the header, the
-// footer — plus the viewport itself is always added as a fallback
-// target (see collectTargets).
-const WIDGET_SELECTOR = '.card, header, footer'
+// The "widget detector": real interface elements the cat is willing
+// to explore. The viewport itself is always added as a fallback
+// target too (see collectTargets).
+const WIDGET_SELECTOR = '.card, header, footer, .btn-primary, .btn-secondary'
 const MIN_WIDGET_WIDTH = 70
-const MIN_WIDGET_HEIGHT = 50
+const MIN_WIDGET_HEIGHT = 44
+// The "gap detector" cutoff — widgets farther than this (in open
+// pixels, not just center-to-center) are treated as too far to leap
+// to right now.
+const MAX_JUMP_PX = 420
+// The "cursor detector" — how close the mouse has to get before the
+// cat notices it, and how often it's allowed to react.
+const NOTICE_RADIUS_PX = 90
+const NOTICE_COOLDOWN_MS = 4000
 
-function pickNextState(current: CatState): CatState {
+/** A "floor" is the only edge orientation a cat can plausibly settle
+ * down on — the other three are a ceiling or a wall in this model. */
+function isFloor(edge: Edge): boolean {
+  return edge === 'bottom'
+}
+
+function decideNextState(current: CatState, canRestHere: boolean): CatState {
   const options: { state: CatState; weight: number }[] = [
-    { state: 'walk', weight: 5 },
-    { state: 'sit', weight: 3 },
-    { state: 'sleep', weight: 2 },
-  ]
-  const weighted = options.filter((o) => o.state !== current)
-  const total = weighted.reduce((sum, o) => sum + o.weight, 0)
+    { state: 'walk' as const, weight: 5 },
+    { state: 'sit' as const, weight: canRestHere ? 3 : 0 },
+    { state: 'sleep' as const, weight: canRestHere ? 2 : 0 },
+  ].filter((o) => o.state !== current && o.weight > 0)
+
+  if (options.length === 0) return 'walk'
+  const total = options.reduce((sum, o) => sum + o.weight, 0)
   let r = Math.random() * total
-  for (const o of weighted) {
+  for (const o of options) {
     if (r < o.weight) return o.state
     r -= o.weight
   }
-  return weighted[0].state
+  return options[0].state
 }
 
 function wrap(n: number): number {
@@ -93,7 +134,7 @@ function perimeterToPoint(rect: Rect, t: number): { x: number; y: number; edge: 
   return { x: left, y: top + height - ((p - 300) / 100) * height, edge: 'left' }
 }
 
-function nearestCornerT(rect: Rect, point: { x: number; y: number }): number {
+function nearestCornerT(rect: Rect, point: Point): number {
   const corners: { t: number; x: number; y: number }[] = [
     { t: 0, x: rect.left, y: rect.top },
     { t: 100, x: rect.left + rect.width, y: rect.top },
@@ -112,6 +153,15 @@ function nearestCornerT(rect: Rect, point: { x: number; y: number }): number {
   return best.t
 }
 
+/** Shortest distance from a point to the outside of a rect (0 if the
+ * point is inside/on it) — the actual open-space gap, not just
+ * center-to-center distance. */
+function distanceToRect(point: Point, rect: Rect): number {
+  const dx = Math.max(rect.left - point.x, 0, point.x - (rect.left + rect.width))
+  const dy = Math.max(rect.top - point.y, 0, point.y - (rect.top + rect.height))
+  return Math.sqrt(dx * dx + dy * dy)
+}
+
 function collectTargets(): Target[] {
   const targets: Target[] = [{ key: 'viewport', el: null }]
   document.querySelectorAll<HTMLElement>(WIDGET_SELECTOR).forEach((el, i) => {
@@ -123,26 +173,27 @@ function collectTargets(): Target[] {
   return targets
 }
 
-function rectCenter(rect: Rect): { x: number; y: number } {
-  return { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 }
-}
-
-function pickNextTarget(current: Target, pool: Target[]): Target {
+/** The "gap detector": picks the next widget to leap to, biased
+ * toward whichever nearby one is actually within jumping distance of
+ * where the cat is standing right now — falling back to the open
+ * window edge rather than teleporting across a gap that's too wide. */
+function pickNextTarget(current: Target, pool: Target[], fromPoint: Point): Target {
   const candidates = pool.filter((c) => c.key !== current.key)
   if (candidates.length === 0) return current
-  if (Math.random() < 0.75) {
-    const currentCenter = rectCenter(getRect(current))
-    const sorted = [...candidates].sort((a, b) => {
-      const ca = rectCenter(getRect(a))
-      const cb = rectCenter(getRect(b))
-      const da = (ca.x - currentCenter.x) ** 2 + (ca.y - currentCenter.y) ** 2
-      const db = (cb.x - currentCenter.x) ** 2 + (cb.y - currentCenter.y) ** 2
-      return da - db
-    })
-    const poolSize = Math.max(1, Math.ceil(sorted.length * 0.4))
-    return sorted[Math.floor(Math.random() * poolSize)]
+
+  const reachable = candidates
+    .filter((c) => c.key !== 'viewport')
+    .map((c) => ({ target: c, distance: distanceToRect(fromPoint, getRect(c)) }))
+    .filter((c) => c.distance <= MAX_JUMP_PX)
+
+  if (reachable.length > 0) {
+    reachable.sort((a, b) => a.distance - b.distance)
+    const poolSize = Math.max(1, Math.ceil(reachable.length * 0.5))
+    return reachable[Math.floor(Math.random() * poolSize)].target
   }
-  return candidates[Math.floor(Math.random() * candidates.length)]
+
+  const viewportTarget = candidates.find((c) => c.key === 'viewport')
+  return viewportTarget ?? candidates[Math.floor(Math.random() * candidates.length)]
 }
 
 /** Chibi side-profile cat, entirely theme-colored via CSS variables. */
@@ -204,6 +255,7 @@ export default function CatCompanion() {
   const [clockwise, setClockwise] = useState(true)
   const [state, setState] = useState<CatState>('walk')
   const [isJumping, setIsJumping] = useState<JumpSize | null>(null)
+  const [isAlert, setIsAlert] = useState(false)
   const [hearts, setHearts] = useState<number[]>([])
 
   const targetRef = useRef<Target>({ key: 'viewport', el: null })
@@ -212,8 +264,12 @@ export default function CatCompanion() {
   const edgesWalkedRef = useRef(0)
   const edgeBudgetRef = useRef(1 + Math.floor(Math.random() * 3))
   const jumpTimerRef = useRef<number | undefined>(undefined)
+  const alertTimerRef = useRef<number | undefined>(undefined)
   const prevEdgeRef = useRef<Edge | null>(null)
   const prevTargetKeyRef = useRef<string>('viewport')
+  const groomingRef = useRef(false)
+  const mouseRef = useRef<Point | null>(null)
+  const lastNoticeAtRef = useRef(0)
 
   useEffect(() => {
     tRef.current = t
@@ -252,12 +308,31 @@ export default function CatCompanion() {
     }
   }, [])
 
+  // The "cursor detector": track the mouse continuously (cheap — just
+  // storing coordinates), independent of the slower behavior clock.
+  useEffect(() => {
+    function handleMouseMove(e: MouseEvent) {
+      mouseRef.current = { x: e.clientX, y: e.clientY }
+    }
+    window.addEventListener('mousemove', handleMouseMove, { passive: true })
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+
   function triggerJump(size: JumpSize) {
     setIsJumping(null)
     window.clearTimeout(jumpTimerRef.current)
     requestAnimationFrame(() => {
       setIsJumping(size)
       jumpTimerRef.current = window.setTimeout(() => setIsJumping(null), size === 'big' ? 620 : 460)
+    })
+  }
+
+  function triggerAlert() {
+    setIsAlert(false)
+    window.clearTimeout(alertTimerRef.current)
+    requestAnimationFrame(() => {
+      setIsAlert(true)
+      alertTimerRef.current = window.setTimeout(() => setIsAlert(false), 420)
     })
   }
 
@@ -275,13 +350,41 @@ export default function CatCompanion() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [t])
 
-  // Main behavior clock: advances the walk (within a widget, around
-  // its corners, or leaping to another one), or waits out a sit/sleep.
+  // The "notice" reaction: checked on its own fast interval (not the
+  // slower walk/rest clock below) so the cat responds to the cursor
+  // in something like real time, the way a real animal would react
+  // to nearby movement rather than only "thinking" every few seconds.
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      const mouse = mouseRef.current
+      if (!mouse) return
+      const now = Date.now()
+      if (now - lastNoticeAtRef.current < NOTICE_COOLDOWN_MS) return
+
+      const currentPoint = perimeterToPoint(getRect(targetRef.current), tRef.current)
+      const dist = Math.hypot(currentPoint.x - mouse.x, currentPoint.y - mouse.y)
+      if (dist > NOTICE_RADIUS_PX) return
+
+      lastNoticeAtRef.current = now
+      triggerAlert()
+      // A resting cat startles awake and gets moving when something
+      // gets this close; a walking cat isn't interrupted.
+      if (state !== 'walk') setState('walk')
+    }, 350)
+
+    return () => window.clearInterval(interval)
+  }, [state])
+
+  // Main behavior clock: senses the situation, decides the next move,
+  // and acts on it — advancing the walk (within a widget, around its
+  // corners, or leaping to another one), or waiting out a sit/sleep.
   useEffect(() => {
     const { minMs, maxMs } = STATE_TIMING[state]
     const duration = minMs + Math.random() * (maxMs - minMs)
 
     const timer = window.setTimeout(() => {
+      let finalEdge = position.edge
+
       if (state === 'walk') {
         // Make sure the target we're on still exists; fall back to
         // the viewport if the page navigated away underneath the cat.
@@ -300,26 +403,33 @@ export default function CatCompanion() {
         const proposedEdgeIdx = Math.floor(wrap(proposed) / 100)
         const wouldCross = currentEdgeIdx !== proposedEdgeIdx
 
+        let finalT: number
+        let finalTarget = targetRef.current
+
         if (wouldCross && !atBoundary) {
           // Walk right up to the corner this tick; crossing it happens
           // on the next tick, once we're sitting exactly on it.
           const boundary = dir > 0 ? (currentEdgeIdx + 1) * 100 : currentEdgeIdx * 100
-          setT(wrap(boundary))
+          finalT = wrap(boundary)
         } else if (atBoundary && edgesWalkedRef.current >= edgeBudgetRef.current) {
           // Leap to a different widget instead of continuing around
-          // this one.
+          // this one (the "gap detector" picks a reachable one).
           const point = perimeterToPoint(currentRect, current)
           const pool = collectTargets()
-          const next = pickNextTarget(targetRef.current, pool)
+          const next = pickNextTarget(targetRef.current, pool, point)
           const nextRect = getRect(next)
+          finalTarget = next
           targetRef.current = next
           edgesWalkedRef.current = 0
           edgeBudgetRef.current = 1 + Math.floor(Math.random() * 3)
-          setT(nearestCornerT(nextRect, point))
+          finalT = nearestCornerT(nextRect, point)
         } else {
           if (atBoundary) edgesWalkedRef.current += 1
-          setT(wrap(proposed))
+          finalT = wrap(proposed)
         }
+
+        setT(finalT)
+        finalEdge = perimeterToPoint(getRect(finalTarget), finalT).edge
 
         // A cat occasionally changes its mind about direction...
         if (Math.random() < 0.22) setClockwise((c) => !c)
@@ -327,15 +437,25 @@ export default function CatCompanion() {
         if (Math.random() < 0.12) triggerJump('small')
       }
 
-      const next = pickNextState(state)
+      // DECIDE: only settle down if the floor detector says this spot
+      // is actually a floor, not a wall or ceiling.
+      const next = decideNextState(state, isFloor(finalEdge))
+      if (next === 'sit') groomingRef.current = Math.random() < 0.35
       if (state !== 'walk' && next === 'walk') triggerJump('small')
       setState(next)
     }, duration)
 
     return () => window.clearTimeout(timer)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
-  useEffect(() => () => window.clearTimeout(jumpTimerRef.current), [])
+  useEffect(
+    () => () => {
+      window.clearTimeout(jumpTimerRef.current)
+      window.clearTimeout(alertTimerRef.current)
+    },
+    []
+  )
 
   function handlePet() {
     const id = Date.now() + Math.random()
@@ -345,19 +465,23 @@ export default function CatCompanion() {
     }, 900)
   }
 
+  const grooming = state === 'sit' && groomingRef.current
+
   return (
     <div className="cat-companion-stage">
       <div className="cat-companion-anchor" style={{ top: `${position.y}px`, left: `${position.x}px` }}>
         <div
           className="cat-companion"
           data-state={state}
+          data-grooming={grooming ? 'true' : undefined}
           style={{ transform: `rotate(${EDGE_ROTATION[position.edge]}deg)` }}
         >
           <div
             className={
               'cat-companion-hopper' +
               (isJumping === 'small' ? ' cat-companion-jump' : '') +
-              (isJumping === 'big' ? ' cat-companion-jump-big' : '')
+              (isJumping === 'big' ? ' cat-companion-jump-big' : '') +
+              (isAlert ? ' cat-companion-alert' : '')
             }
           >
             <button
