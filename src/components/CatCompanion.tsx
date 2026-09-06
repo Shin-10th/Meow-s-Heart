@@ -196,43 +196,67 @@ function pickNextTarget(current: Target, pool: Target[], fromPoint: Point): Targ
   return viewportTarget ?? candidates[Math.floor(Math.random() * candidates.length)]
 }
 
-/** Chibi side-profile cat, entirely theme-colored via CSS variables. */
+/**
+ * Pixel-art sitting cat, drawn from a small ASCII grid instead of
+ * hand-placed shapes — matches the blocky, low-res "screen pet"
+ * look the user asked for (chunky pixels, hard edges, dark outline)
+ * instead of the previous smooth chibi-vector style. Each character
+ * is one square "pixel"; editing the look later just means editing
+ * these rows, no coordinate math required.
+ *
+ * Colors stay on the site's theme CSS variables (not literal gray)
+ * so the cat keeps recoloring with the color-theme switcher, same
+ * as before.
+ */
+const CAT_PIXEL_ROWS = [
+  '....O...O....',
+  '...OFO.OFO...',
+  '..OFOOOFO....',
+  '..OFFFFFFFO..',
+  '..OFFEFEFFO.O',
+  '..OFFFNFFFO.O',
+  '..OFFFFFFFO.O',
+  '...OFFFFFO..O',
+  '..OOFFFFFOO.O',
+  '.OFFFFFFFFFO.',
+  'OFFWWWWWWWFO.',
+  '..OO.....OO..',
+  '.OFO.....OFO.',
+]
+const CAT_PIXEL_COLORS: Record<string, string> = {
+  O: 'var(--color-cocoa)',
+  F: 'var(--color-brand-400)',
+  E: 'var(--color-cocoa)',
+  N: 'var(--color-gold)',
+  W: 'var(--color-cream)',
+}
+const CAT_PIXEL_SIZE = 4
+
 function CatIcon() {
+  const width = CAT_PIXEL_ROWS[0].length * CAT_PIXEL_SIZE
+  const height = CAT_PIXEL_ROWS.length * CAT_PIXEL_SIZE
   return (
-    <svg className="cat-companion-body" viewBox="0 0 60 44" xmlns="http://www.w3.org/2000/svg">
-      <path
-        d="M50 26 C62 22 62 8 52 6"
-        stroke="var(--color-brand-600)"
-        strokeWidth="6"
-        strokeLinecap="round"
-        fill="none"
-      />
-      <ellipse cx="44" cy="40" rx="5" ry="3" fill="var(--color-brand-600)" />
-      <ellipse cx="33" cy="41" rx="5" ry="3" fill="var(--color-brand-600)" />
-      <ellipse cx="22" cy="41" rx="5" ry="3" fill="var(--color-brand-500)" />
-      <ellipse cx="13" cy="40" rx="5" ry="3" fill="var(--color-brand-500)" />
-      <ellipse cx="36" cy="30" rx="18" ry="12" fill="var(--color-brand-500)" />
-      <ellipse cx="36" cy="35" rx="10" ry="7" fill="var(--color-cream)" />
-      <circle cx="16" cy="18" r="11" fill="var(--color-brand-500)" />
-      <path d="M7 12 L5 2 L15 10 Z" fill="var(--color-brand-500)" />
-      <path d="M17 10 L27 2 L25 12 Z" fill="var(--color-brand-500)" />
-      <path d="M8.5 10.5 L7.5 4.5 L13 9.5 Z" fill="var(--color-brand-300)" />
-      <path d="M19 9.5 L24.5 4.5 L23.5 10.5 Z" fill="var(--color-brand-300)" />
-      <path
-        d="M10 19 Q12.5 21.5 15 19"
-        stroke="var(--color-cocoa)"
-        strokeWidth="1.6"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <path
-        d="M17 19 Q19.5 21.5 22 19"
-        stroke="var(--color-cocoa)"
-        strokeWidth="1.6"
-        fill="none"
-        strokeLinecap="round"
-      />
-      <circle cx="16" cy="23" r="1.5" fill="var(--color-gold)" />
+    <svg
+      className="cat-companion-body"
+      viewBox={`0 0 ${width} ${height}`}
+      shapeRendering="crispEdges"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      {CAT_PIXEL_ROWS.map((row, y) =>
+        row.split('').map((ch, x) => {
+          if (ch === '.') return null
+          return (
+            <rect
+              key={`${x}-${y}`}
+              x={x * CAT_PIXEL_SIZE}
+              y={y * CAT_PIXEL_SIZE}
+              width={CAT_PIXEL_SIZE}
+              height={CAT_PIXEL_SIZE}
+              fill={CAT_PIXEL_COLORS[ch]}
+            />
+          )
+        })
+      )}
     </svg>
   )
 }
