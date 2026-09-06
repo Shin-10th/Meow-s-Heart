@@ -14,6 +14,7 @@ import Loyalty from './pages/Loyalty'
 import Login from './pages/Login'
 import Register from './pages/Register'
 import Account from './pages/Account'
+import Settings from './pages/Settings'
 import NotFound from './pages/NotFound'
 
 import AdminLayout from './pages/admin/AdminLayout'
@@ -55,6 +56,7 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route path="settings" element={<Settings />} />
 
           <Route
             path="admin"

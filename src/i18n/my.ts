@@ -260,6 +260,35 @@ const my = {
   // Language toggle
   'lang.english': 'English',
   'lang.burmese': 'မြန်မာ',
+
+  // Header — settings icon
+  'header.settings': 'ဆက်တင်များ',
+
+  // Shop — filters & sorting
+  'shop.filters': 'စစ်ထုတ်မှု',
+  'shop.sortBy': 'စီစဉ်ရန်',
+  'shop.sort.newest': 'အသစ်ဆုံး',
+  'shop.sort.priceAsc': 'ဈေးနှုန်း: နည်းမှများသို့',
+  'shop.sort.priceDesc': 'ဈေးနှုန်း: များမှနည်းသို့',
+  'shop.sort.name': 'အမည်အလိုက်',
+  'shop.priceRange': 'ဈေးနှုန်းအပိုင်းအခြား (ကျပ်)',
+  'shop.minPrice': 'အနည်းဆုံး',
+  'shop.maxPrice': 'အများဆုံး',
+  'shop.inStockOnly': 'လက်ကျန်ရှိသည်များသာ',
+  'shop.clearFilters': 'စစ်ထုတ်မှုများ ဖယ်ရှားရန်',
+
+  // Settings page
+  'settings.eyebrow': 'ဆက်တင်များ',
+  'settings.heading': 'သင့်အတွေ့အကြုံကို စိတ်ကြိုက်ပြင်ဆင်ပါ',
+  'settings.subtitle': 'အရောင်၊ ဘာသာစကားနှင့် အက်ဒမင်ကိရိယာများကို တစ်နေရာတည်းတွင် ရွေးချယ်ပါ။',
+  'settings.appearance': 'အသွင်အပြင်',
+  'settings.appearanceDesc': 'ဆိုက်တစ်ခုလုံးအတွက် အရောင်ရွေးချယ်ပါ။',
+  'settings.language': 'ဘာသာစကား',
+  'settings.languageDesc': 'သင်နှစ်သက်ရာ ဘာသာစကားကို ရွေးချယ်ပါ။',
+  'settings.admin': 'အက်ဒမင်',
+  'settings.adminDesc': 'ကုန်ပစ္စည်း၊ အော်ဒါ၊ အချိန်ယူမှုနှင့် မက်ဆေ့ချ်များကို စီမံခန့်ခွဲပါ။',
+  'settings.openAdmin': 'အက်ဒမင် ဒက်ရှ်ဘုတ်ဖွင့်ရန်',
+
 } as const
 
 export default my

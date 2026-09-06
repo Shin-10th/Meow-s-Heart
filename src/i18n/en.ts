@@ -258,6 +258,35 @@ const en = {
   // Language toggle
   'lang.english': 'English',
   'lang.burmese': 'မြန်မာ',
+
+  // Header — settings icon
+  'header.settings': 'Settings',
+
+  // Shop — filters & sorting
+  'shop.filters': 'Filters',
+  'shop.sortBy': 'Sort by',
+  'shop.sort.newest': 'Newest',
+  'shop.sort.priceAsc': 'Price: Low to High',
+  'shop.sort.priceDesc': 'Price: High to Low',
+  'shop.sort.name': 'Name: A–Z',
+  'shop.priceRange': 'Price range (MMK)',
+  'shop.minPrice': 'Min',
+  'shop.maxPrice': 'Max',
+  'shop.inStockOnly': 'In stock only',
+  'shop.clearFilters': 'Clear filters',
+
+  // Settings page
+  'settings.eyebrow': 'Settings',
+  'settings.heading': 'Personalize Your Experience',
+  'settings.subtitle': 'Choose your color theme, language, and manage admin tools all in one place.',
+  'settings.appearance': 'Appearance',
+  'settings.appearanceDesc': 'Pick a color theme for the whole site.',
+  'settings.language': 'Language',
+  'settings.languageDesc': 'Choose your preferred language.',
+  'settings.admin': 'Admin',
+  'settings.adminDesc': 'Manage products, orders, bookings, and messages.',
+  'settings.openAdmin': 'Open Admin Dashboard',
+
 } as const
 
 export default en
