@@ -179,22 +179,23 @@
   }
 
   /* ---- Cat companion (see CatCompanion.tsx) ---- */
-  /* A single cat that roams around the actual page layout — walking
-     the borders of cards/header/footer, jumping between them across
-     the gaps, sometimes sitting on a corner or exploring the outer
-     window edge — rather than a fixed rectangular path. The stage
-     covers the whole viewport and ignores pointer events so it never
-     blocks clicks; only the cat's own small hit area is interactive,
-     so it can be clicked/"pet".
+  /* A single cat that roams around the actual page layout, always
+     landing feet-first on a widget's "ledge" (its top edge normally,
+     or its bottom edge when the widget sits near the top of the
+     screen) and pacing back and forth before leaping to another
+     widget across the gaps — rather than clinging sideways to any
+     edge. The stage covers the whole viewport and ignores pointer
+     events so it never blocks clicks; only the cat's own small hit
+     area is interactive, so it can be clicked/"pet".
 
      Structure: anchor (absolute pixel position, centered on the exact
-     border point CatCompanion.tsx computed) > companion (rotates to
-     lie flush against whichever of that widget's 4 edges it's on) >
-     hopper (plays the little jump/pounce hop, bigger when leaping
-     between widgets) > hit button (flips to face the direction of
-     travel) > body (the SVG cat, with its own walk-bob/breathe
-     animation). Each layer only touches its own transform, so they
-     combine without fighting each other. */
+     ledge point CatCompanion.tsx computed) > companion (always drawn
+     upright, standing on the ledge) > hopper (plays the little
+     jump/pounce hop, bigger when leaping between widgets) > hit
+     button (flips horizontally to face the direction of travel) >
+     body (the SVG cat, with its own walk-bob/breathe animation).
+     Each layer only touches its own transform, so they combine
+     without fighting each other. */
   .cat-companion-stage {
     position: fixed;
     inset: 0;
@@ -317,5 +318,33 @@
     0% { opacity: 0; transform: translate(-50%, 0) scale(0.6); }
     30% { opacity: 1; transform: translate(-50%, -10px) scale(1.1); }
     100% { opacity: 0; transform: translate(-50%, -30px) scale(0.9); }
+  }
+
+  /* ---- Paw background (see PawBackground.tsx) ---- */
+  /* A quiet decorative layer of drifting paw prints behind the page
+     content. Fixed to the viewport like the cat-companion stage, but
+     sunk to a NEGATIVE z-index (not 0) — per normal CSS painting
+     order, positioned content at z:0 still paints above ordinary
+     static in-flow content, so a negative z-index is what actually
+     lets every real card/header/button (each with its own opaque
+     background) cover the paws; they only ever peek through the
+     empty cream margins around the page's widgets. */
+  .paw-bg-stage {
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    overflow: hidden;
+    pointer-events: none;
+  }
+  .paw-bg-item {
+    position: absolute;
+    opacity: var(--paw-opacity, 0.4);
+    transform: rotate(var(--paw-rotate, 0deg));
+    animation: paw-float 14s ease-in-out infinite;
+  }
+  @keyframes paw-float {
+    0% { transform: translate(0, 0) rotate(var(--paw-rotate, 0deg)); }
+    50% { transform: translate(10px, -22px) rotate(calc(var(--paw-rotate, 0deg) + 8deg)); }
+    100% { transform: translate(0, 0) rotate(var(--paw-rotate, 0deg)); }
   }
 }

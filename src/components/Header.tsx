@@ -9,7 +9,7 @@ import { useLanguage } from '../context/LanguageContext'
 export default function Header() {
   const [open, setOpen] = useState(false)
   const { totalItems } = useCart()
-  const { user, isAdmin } = useAuth()
+  const { user } = useAuth()
   const { t } = useLanguage()
 
   const navLinks = [
@@ -40,18 +40,6 @@ export default function Header() {
               {link.label}
             </NavLink>
           ))}
-          {isAdmin && (
-            <NavLink
-              to="/admin"
-              className={({ isActive }) =>
-                `shrink-0 whitespace-nowrap text-xs font-medium uppercase tracking-[0.12em] transition hover:text-brand-600 ${
-                  isActive ? 'text-brand-600' : 'text-cocoa/70'
-                }`
-              }
-            >
-              {t('nav.admin')}
-            </NavLink>
-          )}
         </nav>
 
         <div className="flex shrink-0 items-center gap-1.5 sm:gap-2">
@@ -117,19 +105,6 @@ export default function Header() {
                 {link.label}
               </NavLink>
             ))}
-            {isAdmin && (
-              <NavLink
-                to="/admin"
-                onClick={() => setOpen(false)}
-                className={({ isActive }) =>
-                  `rounded-lg px-3 py-2 text-sm font-semibold ${
-                    isActive ? 'bg-brand-50 text-brand-600' : 'text-cocoa/80'
-                  }`
-                }
-              >
-                {t('nav.admin')}
-              </NavLink>
-            )}
           </div>
         </nav>
       )}
