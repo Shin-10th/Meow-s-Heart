@@ -41,6 +41,27 @@ import { useEffect, useRef, useState } from 'react'
  *     back the other way at its end, leap to a different widget, or
  *     settle in to rest.
  *
+ * --- Widget detection & preference ranking ---
+ * `collectTargets` scans the live page for several tiers of "widget",
+ * each tagged with a `WidgetCategory` and ranked in `CATEGORY_PRIORITY`
+ * from most to least cat-appealing:
+ *
+ *   1. button  — real buttons/CTAs (most preferred; a cat loves a box)
+ *   2. card    — product cards and other containers, plus the
+ *                header/footer (their borders/edges)
+ *   3. heading — titles and section headings
+ *   4. content — ordinary body text blocks (paragraphs, list items)
+ *   5. viewport — the open window floor itself; only used when
+ *                nothing else is available at all
+ *
+ * `pickNextTarget` always prefers the highest-priority tier that's
+ * actually within jumping distance (the gap detector, see below) —
+ * so a nearby button wins over a nearby paragraph, but a distant
+ * button won't be leapt to over a close-by heading. If a page has no
+ * detectable widgets at all it falls back to `content` (sitting near
+ * whatever text exists) and only resorts to the bare viewport as a
+ * last resort.
+ *
  * --- How the movement itself works (the "ledge" model) ---
  * A real cat doesn't cling upside-down to the underside of a shelf or
  * flatten itself sideways against a wall — it stands feet-down on a
@@ -59,20 +80,30 @@ import { useEffect, useRef, useState } from 'react'
  * this same rule happens to fall out for the viewport target too,
  * landing exactly on the real floor at the bottom of the window).
  *
+ * Every ledge is then inset from the true browser window edges by
+ * `EDGE_MARGIN_PX` (`clampLedgeToWindow`) — even a full-bleed header
+ * or footer that spans edge-to-edge gets pulled in a little, so the
+ * cat never ends up flush against the outer border of the window,
+ * however wide its target actually is.
+ *
  * The cat paces back and forth along its current ledge, turning
  * around (a little hop) when it reaches either end. After a couple
  * of such turns it leaps to a different widget instead of pacing the
  * same one forever — biased toward whichever nearby ledge is
- * actually reachable (see the gap detector above) and landing on
- * whichever end of it is closest to where it jumped from, so the hop
- * reads as continuous rather than teleporting. Rects are read live
- * via getBoundingClientRect(), so the cat stays glued to its target
- * as the page scrolls or resizes.
+ * actually reachable and highest-preference (see above) and landing
+ * on whichever end of it is closest to where it jumped from, so the
+ * hop reads as continuous rather than teleporting. Rects are read
+ * live via getBoundingClientRect(), so the cat stays glued to its
+ * target as the page scrolls or resizes.
  */
 
 type CatState = 'walk' | 'sit' | 'sleep'
 type Rect = { top: number; left: number; width: number; height: number }
-type Target = { key: string; el: HTMLElement | null }
+/** The tiers of "widget" the cat can recognize, most to least
+ * preferred — see CATEGORY_PRIORITY and the widget-detection note
+ * at the top of the file. */
+type WidgetCategory = 'button' | 'card' | 'heading' | 'content' | 'viewport'
+type Target = { key: string; el: HTMLElement | null; category: WidgetCategory }
 type JumpSize = 'small' | 'big'
 type Point = { x: number; y: number }
 /** The one horizontal line a cat can stand on for a given target —
@@ -85,12 +116,28 @@ const STATE_TIMING: Record<CatState, { minMs: number; maxMs: number }> = {
   sleep: { minMs: 5000, maxMs: 11000 },
 }
 
-// The "widget detector": real interface elements the cat is willing
-// to explore. The viewport itself is always added as a fallback
-// target too (see collectTargets).
-const WIDGET_SELECTOR = '.card, header, footer, .btn-primary, .btn-secondary'
-const MIN_WIDGET_WIDTH = 70
-const MIN_WIDGET_HEIGHT = 44
+/** How much a widget category is worth to the cat when choosing
+ * where to go next — higher wins. See the widget-detection note at
+ * the top of the file. */
+const CATEGORY_PRIORITY: Record<WidgetCategory, number> = {
+  button: 4,
+  card: 3,
+  heading: 2,
+  content: 1,
+  viewport: 0,
+}
+
+// The "widget detector": each tier of real interface element the cat
+// is willing to explore, most to least preferred, with its own
+// minimum size (a tiny icon button or a one-word list item isn't
+// worth perching on). The viewport itself is always added as a
+// last-resort fallback target too (see collectTargets).
+const WIDGET_GROUPS: { category: WidgetCategory; selector: string; minWidth: number; minHeight: number }[] = [
+  { category: 'button', selector: '.btn-primary, .btn-secondary, button', minWidth: 36, minHeight: 26 },
+  { category: 'card', selector: '.card, header, footer', minWidth: 70, minHeight: 44 },
+  { category: 'heading', selector: 'h1, h2, h3, h4, .font-display', minWidth: 40, minHeight: 18 },
+  { category: 'content', selector: 'p, li, blockquote', minWidth: 60, minHeight: 14 },
+]
 // The "gap detector" cutoff — widgets farther than this (in open
 // pixels, not just center-to-center) are treated as too far to leap
 // to right now.
@@ -99,6 +146,9 @@ const MAX_JUMP_PX = 420
 // (a sticky header, say) has no open space above it to perch on, so
 // its ledge flips to the bottom edge instead — see ledgeFor().
 const NEAR_VIEWPORT_TOP_PX = 40
+// How far the cat keeps itself from the true edges of the browser
+// window at all times — see clampLedgeToWindow().
+const EDGE_MARGIN_PX = 24
 // The "cursor detector" — how close the mouse has to get before the
 // cat notices it, and how often it's allowed to react.
 const NOTICE_RADIUS_PX = 90
@@ -133,16 +183,36 @@ function getRect(target: Target): Rect {
   return { top: r.top, left: r.left, width: r.width, height: r.height }
 }
 
+/** Keeps a ledge a comfortable distance from the true edges of the
+ * browser window at all times — a real cat doesn't perch flush
+ * against a windowsill's outer lip. Applied to every ledge (not just
+ * the viewport target's), since a full-bleed header or footer can
+ * otherwise span edge-to-edge. */
+function clampLedgeToWindow(ledge: Ledge): Ledge {
+  const minX = EDGE_MARGIN_PX
+  const maxX = Math.max(minX, window.innerWidth - EDGE_MARGIN_PX)
+  const minY = EDGE_MARGIN_PX
+  const maxY = Math.max(minY, window.innerHeight - EDGE_MARGIN_PX)
+
+  let xStart = Math.min(Math.max(ledge.xStart, minX), maxX)
+  let xEnd = Math.min(Math.max(ledge.xEnd, minX), maxX)
+  if (xEnd < xStart) [xStart, xEnd] = [xEnd, xStart]
+
+  const y = Math.min(Math.max(ledge.y, minY), maxY)
+  return { y, xStart, xEnd }
+}
+
 /** The single walkable ledge for a target — see the "ledge model"
  * note at the top of the file. This same rule naturally lands the
  * viewport target on the real floor (its rect.top is always 0, which
  * is "near the top", so it resolves to rect.top + rect.height = the
- * bottom of the screen) without needing a separate case for it. */
+ * bottom of the screen) without needing a separate case for it. The
+ * result is always inset from the real window edges. */
 function ledgeFor(target: Target): Ledge {
   const rect = getRect(target)
   const nearViewportTop = rect.top < NEAR_VIEWPORT_TOP_PX
   const y = nearViewportTop ? rect.top + rect.height : rect.top
-  return { y, xStart: rect.left, xEnd: rect.left + rect.width }
+  return clampLedgeToWindow({ y, xStart: rect.left, xEnd: rect.left + rect.width })
 }
 
 /** Whichever end of a ledge is closer to a given x, so a leap between
@@ -161,37 +231,70 @@ function distanceToRect(point: Point, rect: Rect): number {
   return Math.sqrt(dx * dx + dy * dy)
 }
 
+/** Scans the live page for every tier of widget in WIDGET_GROUPS
+ * (most to least preferred), tagging each with its category — plus
+ * the viewport itself as a last-resort fallback. Only elements
+ * currently on-screen and above their tier's minimum size count, and
+ * each real DOM element is only ever added once even if it happens
+ * to match more than one group. */
 function collectTargets(): Target[] {
-  const targets: Target[] = [{ key: 'viewport', el: null }]
-  document.querySelectorAll<HTMLElement>(WIDGET_SELECTOR).forEach((el, i) => {
-    const r = el.getBoundingClientRect()
-    if (r.width < MIN_WIDGET_WIDTH || r.height < MIN_WIDGET_HEIGHT) return
-    if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) return
-    targets.push({ key: `w${i}-${Math.round(r.left)}-${Math.round(r.top)}`, el })
-  })
+  const targets: Target[] = [{ key: 'viewport', el: null, category: 'viewport' }]
+  const seen = new Set<Element>()
+  for (const group of WIDGET_GROUPS) {
+    document.querySelectorAll<HTMLElement>(group.selector).forEach((el, i) => {
+      if (seen.has(el)) return
+      const r = el.getBoundingClientRect()
+      if (r.width < group.minWidth || r.height < group.minHeight) return
+      if (r.bottom < 0 || r.top > window.innerHeight || r.right < 0 || r.left > window.innerWidth) return
+      seen.add(el)
+      targets.push({
+        key: `${group.category}-${i}-${Math.round(r.left)}-${Math.round(r.top)}`,
+        el,
+        category: group.category,
+      })
+    })
+  }
   return targets
 }
 
-/** The "gap detector": picks the next widget to leap to, biased
- * toward whichever nearby one is actually within jumping distance of
- * where the cat is standing right now — falling back to the open
- * window edge rather than teleporting across a gap that's too wide. */
+/** Picks the best starting target when the cat first mounts —
+ * whichever detected widget ranks highest in CATEGORY_PRIORITY
+ * (ties broken randomly), with no jump-distance limit since there's
+ * no "from" position yet. Falls back to the viewport only if the
+ * page genuinely has nothing else on it. */
+function pickInitialTarget(pool: Target[]): Target {
+  const detected = pool.filter((t) => t.category !== 'viewport')
+  if (detected.length === 0) return pool[0]
+  const bestPriority = detected.reduce((max, t) => Math.max(max, CATEGORY_PRIORITY[t.category]), -1)
+  const preferred = detected.filter((t) => CATEGORY_PRIORITY[t.category] === bestPriority)
+  return preferred[Math.floor(Math.random() * preferred.length)]
+}
+
+/** The "gap detector" + preference ranking: picks the next widget to
+ * leap to, first narrowing to whichever ones are actually within
+ * jumping distance of where the cat is standing right now (falling
+ * back to the open window floor rather than teleporting across a gap
+ * that's too wide), then — among those reachable — preferring
+ * whichever tier ranks highest in CATEGORY_PRIORITY, closest one
+ * first. */
 function pickNextTarget(current: Target, pool: Target[], fromPoint: Point): Target {
   const candidates = pool.filter((c) => c.key !== current.key)
   if (candidates.length === 0) return current
 
   const reachable = candidates
-    .filter((c) => c.key !== 'viewport')
+    .filter((c) => c.category !== 'viewport')
     .map((c) => ({ target: c, distance: distanceToRect(fromPoint, getRect(c)) }))
     .filter((c) => c.distance <= MAX_JUMP_PX)
 
   if (reachable.length > 0) {
-    reachable.sort((a, b) => a.distance - b.distance)
-    const poolSize = Math.max(1, Math.ceil(reachable.length * 0.5))
-    return reachable[Math.floor(Math.random() * poolSize)].target
+    const bestPriority = reachable.reduce((max, c) => Math.max(max, CATEGORY_PRIORITY[c.target.category]), -1)
+    const preferred = reachable.filter((c) => CATEGORY_PRIORITY[c.target.category] === bestPriority)
+    preferred.sort((a, b) => a.distance - b.distance)
+    const poolSize = Math.max(1, Math.ceil(preferred.length * 0.5))
+    return preferred[Math.floor(Math.random() * poolSize)].target
   }
 
-  const viewportTarget = candidates.find((c) => c.key === 'viewport')
+  const viewportTarget = candidates.find((c) => c.category === 'viewport')
   return viewportTarget ?? candidates[Math.floor(Math.random() * candidates.length)]
 }
 
@@ -281,7 +384,7 @@ export default function CatCompanion() {
   const [isAlert, setIsAlert] = useState(false)
   const [hearts, setHearts] = useState<number[]>([])
 
-  const targetRef = useRef<Target>({ key: 'viewport', el: null })
+  const targetRef = useRef<Target>({ key: 'viewport', el: null, category: 'viewport' })
   const xRef = useRef(x)
   const movingRightRef = useRef(movingRight)
   const traversalsRef = useRef(0)
@@ -299,10 +402,12 @@ export default function CatCompanion() {
     movingRightRef.current = movingRight
   }, [movingRight])
 
-  // Pick an initial target once the page's real content has rendered.
+  // Pick an initial target once the page's real content has
+  // rendered — whichever detected widget ranks highest in the
+  // preference order (see pickInitialTarget / CATEGORY_PRIORITY).
   useEffect(() => {
     const pool = collectTargets()
-    const initial = pool.length > 1 ? pool[1 + Math.floor(Math.random() * (pool.length - 1))] : pool[0]
+    const initial = pickInitialTarget(pool)
     targetRef.current = initial
     const ledge = ledgeFor(initial)
     setX(ledge.xStart + Math.random() * Math.max(0, ledge.xEnd - ledge.xStart))
@@ -402,7 +507,7 @@ export default function CatCompanion() {
         // Make sure the target we're on still exists; fall back to
         // the viewport if the page navigated away underneath the cat.
         if (targetRef.current.el && !document.body.contains(targetRef.current.el)) {
-          targetRef.current = { key: 'viewport', el: null }
+          targetRef.current = { key: 'viewport', el: null, category: 'viewport' }
         }
 
         const ledge = ledgeFor(targetRef.current)
@@ -419,9 +524,10 @@ export default function CatCompanion() {
 
           if (traversalsRef.current >= traversalBudgetRef.current) {
             // Leap to a different widget instead of pacing this one
-            // again (the "gap detector" picks a reachable one),
-            // landing feet-first on whichever end of its ledge is
-            // nearest to where we jumped from.
+            // again (the "gap detector" + preference ranking pick a
+            // reachable, high-priority one), landing feet-first on
+            // whichever end of its ledge is nearest to where we
+            // jumped from.
             const point = { x: boundaryX, y: ledge.y }
             const pool = collectTargets()
             const next = pickNextTarget(targetRef.current, pool, point)
