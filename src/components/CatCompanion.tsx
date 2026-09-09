@@ -55,9 +55,14 @@ import { useEffect, useRef, useState } from 'react'
  *                nothing else is available at all
  *
  * `pickNextTarget` always prefers the highest-priority tier that's
- * actually within jumping distance (the gap detector, see below) —
- * so a nearby button wins over a nearby paragraph, but a distant
- * button won't be leapt to over a close-by heading. If a page has no
+ * within jumping distance — but "within jumping distance" is judged
+ * PER CATEGORY (`CATEGORY_REACH_PX`), not by one shared cutoff. A
+ * page's paragraphs are numerous and packed tightly (often just a
+ * line-height apart), so a single shared radius let them dominate by
+ * sheer density, trapping the cat hopping between adjacent sentences
+ * even when a button or card sat only a bit farther away. Buttons and
+ * cards get a much wider radius than plain text, so a nearby favorite
+ * spot reliably wins even over a closer paragraph. If a page has no
  * detectable widgets at all it falls back to `content` (sitting near
  * whatever text exists) and only resorts to the bare viewport as a
  * last resort.
@@ -138,10 +143,24 @@ const WIDGET_GROUPS: { category: WidgetCategory; selector: string; minWidth: num
   { category: 'heading', selector: 'h1, h2, h3, h4, .font-display', minWidth: 40, minHeight: 18 },
   { category: 'content', selector: 'p, li, blockquote', minWidth: 60, minHeight: 14 },
 ]
-// The "gap detector" cutoff — widgets farther than this (in open
-// pixels, not just center-to-center) are treated as too far to leap
-// to right now.
-const MAX_JUMP_PX = 420
+// The "gap detector" cutoff, PER CATEGORY — widgets farther than
+// this (in open pixels, not just center-to-center) are treated as
+// too far to leap to right now. Preferred categories get a much
+// wider radius than plain text: a page's paragraphs/list items are
+// numerous and densely packed (often just a line-height apart), so
+// a single shared cutoff let them dominate purely by density,
+// trapping the cat hopping between adjacent sentences even when a
+// button or card sat only slightly farther away. Widening the
+// button/card radius means "is a favorite spot reachable at all" is
+// judged generously, so it reliably wins over nearby text once one
+// exists anywhere in the general area.
+const CATEGORY_REACH_PX: Record<WidgetCategory, number> = {
+  button: 900,
+  card: 900,
+  heading: 550,
+  content: 300,
+  viewport: Infinity,
+}
 // A widget pinned within this many pixels of the top of the screen
 // (a sticky header, say) has no open space above it to perch on, so
 // its ledge flips to the bottom edge instead — see ledgeFor().
@@ -271,12 +290,15 @@ function pickInitialTarget(pool: Target[]): Target {
 }
 
 /** The "gap detector" + preference ranking: picks the next widget to
- * leap to, first narrowing to whichever ones are actually within
- * jumping distance of where the cat is standing right now (falling
- * back to the open window floor rather than teleporting across a gap
- * that's too wide), then — among those reachable — preferring
- * whichever tier ranks highest in CATEGORY_PRIORITY, closest one
- * first. */
+ * leap to. Each candidate is checked against its OWN category's reach
+ * (CATEGORY_REACH_PX) rather than one shared cutoff — so a button or
+ * card counts as reachable across a much wider gap than a paragraph
+ * does, deliberately biasing toward "is there a favorite spot
+ * anywhere nearby" over "what's the closest thing regardless of
+ * type". Among everything that qualifies, the highest-ranked
+ * category wins outright (see CATEGORY_PRIORITY), closest one first;
+ * falls back to the open window floor rather than teleporting across
+ * a gap that's too wide for anything. */
 function pickNextTarget(current: Target, pool: Target[], fromPoint: Point): Target {
   const candidates = pool.filter((c) => c.key !== current.key)
   if (candidates.length === 0) return current
@@ -284,7 +306,7 @@ function pickNextTarget(current: Target, pool: Target[], fromPoint: Point): Targ
   const reachable = candidates
     .filter((c) => c.category !== 'viewport')
     .map((c) => ({ target: c, distance: distanceToRect(fromPoint, getRect(c)) }))
-    .filter((c) => c.distance <= MAX_JUMP_PX)
+    .filter((c) => c.distance <= CATEGORY_REACH_PX[c.target.category])
 
   if (reachable.length > 0) {
     const bestPriority = reachable.reduce((max, c) => Math.max(max, CATEGORY_PRIORITY[c.target.category]), -1)
