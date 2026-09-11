@@ -15,10 +15,11 @@ const RECEIPTS_BUCKET = 'payment-receipts'
 const COD_ELIGIBLE_CITIES = ['Yangon', 'Mandalay', 'Naypyitaw']
 const CITIES = [...COD_ELIGIBLE_CITIES, 'Bago', 'Mawlamyine', 'Taunggyi', 'Pathein', 'Monywa', 'Other']
 
-// TODO(store owner): replace with your real KPay-registered name and
-// number before taking real orders — these are placeholders.
-const KPAY_NAME = "Meow's Heart"
-const KPAY_NUMBER = '09xxxxxxxxx'
+// The name shown when a customer scans the KBZPay QR code below
+// (public/kpay-qr.png) — it's the registered account holder's name,
+// not the store name, since that's what actually appears in the
+// KBZPay app on scan and is what customers should expect to see.
+const KPAY_NAME = 'Shin Mon Thant'
 
 function randomId() {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -320,10 +321,20 @@ export default function Checkout() {
               {paymentMethod === 'kpay' && (
                 <div className="rounded-2xl border border-cocoa/10 bg-cream-dark/40 p-4">
                   <p className="text-sm font-semibold text-cocoa">{t('checkout.kpayInstructionsHeading')}</p>
-                  <p className="mt-1 text-sm text-cocoa-light">
-                    {t('checkout.kpaySendTo', { name: KPAY_NAME, number: KPAY_NUMBER })}
+                  <p className="mt-1 text-sm text-cocoa-light">{t('checkout.kpayScanQr')}</p>
+
+                  <div className="mt-3 flex justify-center">
+                    <img
+                      src="/kpay-qr.png"
+                      alt="KBZPay scan-to-pay QR code"
+                      className="w-full max-w-[220px] rounded-2xl ring-1 ring-cocoa/10"
+                    />
+                  </div>
+                  <p className="mt-2 text-center text-xs font-semibold text-cocoa-light">
+                    {t('checkout.kpayAccountName', { name: KPAY_NAME })}
                   </p>
-                  <p className="mt-2 text-sm text-cocoa-light">{t('checkout.kpayReferenceGuide', { name: name || '—', phone: phone || '—' })}</p>
+
+                  <p className="mt-3 text-sm text-cocoa-light">{t('checkout.kpayReferenceGuide', { name: name || '—', phone: phone || '—' })}</p>
 
                   <div className="mt-4">
                     <p className="label">{t('checkout.uploadReceipt')}</p>
