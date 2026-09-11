@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
-import { Camera, Users, Send } from 'lucide-react'
+import { Send } from 'lucide-react'
 import { useLanguage } from '../context/LanguageContext'
 import Logo from './Logo'
+import { InstagramIcon, FacebookIcon } from './SocialIcons'
 
 export default function Footer() {
   const { t } = useLanguage()
@@ -12,13 +13,31 @@ export default function Footer() {
           <Logo />
           <p className="mt-3 text-sm leading-relaxed text-cocoa-light">{t('footer.tagline')}</p>
           <div className="mt-4 flex gap-3">
-            <a href="#" aria-label="Facebook" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
-              <Users className="h-4 w-4" />
+            <a
+              href="https://facebook.com/share/1D8vbkqVe3"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Facebook"
+              className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100"
+            >
+              <FacebookIcon className="h-4 w-4" />
             </a>
-            <a href="#" aria-label="Instagram" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
-              <Camera className="h-4 w-4" />
+            <a
+              href="https://www.instagram.com/meow.heart085"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Instagram"
+              className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100"
+            >
+              <InstagramIcon className="h-4 w-4" />
             </a>
-            <a href="#" aria-label="Telegram" className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100">
+            <a
+              href="https://t.me/meowheart085"
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label="Telegram"
+              className="grid h-9 w-9 place-items-center rounded-full bg-brand-50 text-brand-600 transition hover:bg-brand-100"
+            >
               <Send className="h-4 w-4" />
             </a>
           </div>
